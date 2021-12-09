@@ -20,6 +20,10 @@ game.block = function (x,y,z, type){
 document.addEventListener("mousemove", event => {
   game.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
   game.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  if(game.controls.selection == "FreeCam"){
+    game.mouse.x = 0;
+    game.mouse.y = 0;
+  };
   game.raycaster.setFromCamera(game.mouse, game.camera);
 });
 document.addEventListener("mousedown", () => {
