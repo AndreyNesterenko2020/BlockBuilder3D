@@ -26,6 +26,7 @@ game.UI.init = function (){
     game.UI.settings.innerHTML += "<h1 style=margin-top:2%;margin-left:5%>Settings</h1><button style=margin-top:2%;margin-left:5% onclick='if(game.controls.selection == `FreeCam`){game.controls.selection = `Orbit`; this.innerHTML = `Change controls to FreeCam`; this.blur()} else {game.controls.selection = `FreeCam`; this.innerHTML = `Change controls to Orbit`; this.blur()}'>Change controls to Orbit</button> FOV: <input type=number onkeyup=game.FOV=this.value value="+game.FOV+"> Range: <input type=number onkeyup=game.range=this.value value="+game.range+"> <button onclick=game.UI.settings.style.display=`none`;>close</button>";
     game.UI.settings.style.display = "none";
     game.UI.settingsButton = document.createElement("button")
+    game.UI.settingsButton.onclick = function(){game.UI.settings.style.display=`block`;};
     game.UI.settingsButton.innerHTML = "Settings";
     game.UI.settingsButton.style.position = "absolute";
     game.UI.settingsButton.style.marginTop = "-5%";
