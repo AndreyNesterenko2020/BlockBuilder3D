@@ -15,15 +15,19 @@
         <title>BlockBuilder3D version </title>
         <script src="js/three.js"></script>
         <script src="js/OrbitControls.js"></script>
+	<script src="js/PointerLockControls.js"></script>
+        <script src="js/FirstPersonControls.js"></script>
         <script src="js/missing.js"></script>
     </head>
     <body>
         <script>
             var game = {
-                version: "1.0.0",
+                version: "1.1.0",
                 materials: {},
                 blocks: {},
                 UI: {},
+		generation: {},
+		controls: {selection: null},
                 FOV: 60,
                 range: 5,
             };
@@ -37,20 +41,40 @@
             game.geometry = new THREE.BoxGeometry();
             game.materials.defaultMaterial = new THREE.MeshLambertMaterial({map: game.textureLoader.load(missing)});
             game.scene.background = new THREE.Color(0xffffff);
-            game.controls = new THREE.OrbitControls(game.camera, game.renderer.domElement)
+            //game.controls = new THREE.OrbitControls(game.camera, game.renderer.domElement)
             game.camera.position.z = 5;
             game.Sun = new THREE.DirectionalLight(0xffffff, 1, 1000);
             game.Sun.position.set(5,10,2);
             game.scene.add(game.Sun);
-	        game.Sun.CastShadow	= true;
+	    game.Sun.CastShadow	= true;
             game.renderer.shadowMap.enabled = true;
             game.AmbientLight = new THREE.AmbientLight(0x404040);
             game.scene.add(game.AmbientLight);
+	    game.renderer.domElement.onclick = function (){
+              if (game.controls.selection == "FreeCam") {
+                game.controls.PointerLock.lock();
+              }
+            }
             game.render = function (){
                 requestAnimationFrame(game.render)
                 game.renderer.render(game.scene, game.camera);
                 game.camera.fov = game.FOV;
                 game.camera.updateProjectionMatrix();
+		game.controls.FirstPerson.update(game.clock.getDelta())
+                if(game.controls.selection == "FreeCam"){
+                  game.controls.FirstPerson.enabled = true;
+                  game.controls.PointerLock.enabled = true;
+                  document.getElementById("crosshair").style.display = "block";
+                } else {
+                  game.controls.FirstPerson.enabled = false;
+                  game.controls.PointerLock.enabled = false;
+                  document.getElementById("crosshair").style.display = "none";
+                }
+                if(game.controls.selection == "Orbit"){
+                  game.controls.Orbit.enabled = true;
+                } else {
+                  game.controls.Orbit.enabled = false;
+                };
             };
             game.init = function() {
                 document.title = document.title + game.version;
@@ -58,11 +82,16 @@
                 game.UI.init();
                 game.block(0,0,0, "stone");
             };
+	    window.addEventListener('resize', function (){
+                game.camera.aspect = window.innerWidth / window.innerHeight;
+                game.renderer.setSize( window.innerWidth, window.innerHeight );
+            });
             window.onload = function (){
                 game.init();
             };
         </script>
         <script src="js/block.js"></script>
         <script src="js/UI.js"></script>
+	<script src="js/worldgen.js"></script>
     </body>
 </html>
