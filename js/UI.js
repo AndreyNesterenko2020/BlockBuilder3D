@@ -39,7 +39,7 @@ game.UI.add = function (type){
     item.style.marginTop = "2%";
     item.style.marginLeft = "5%";
     item.src = "textures/"+type+".png";
-    item.blocktype = type;
+    item.id = type;
     item.onerror = function (){
         item.src = missing;
     };
