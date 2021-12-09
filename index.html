@@ -22,7 +22,7 @@
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.1.4",
+                version: "1.1.5",
                 materials: {},
                 blocks: {},
                 UI: {},
@@ -44,7 +44,7 @@
             game.controls.Orbit = new THREE.OrbitControls(game.camera, game.renderer.domElement);
 	    game.controls.FirstPerson = new THREE.FirstPersonControls(game.camera, game.renderer.domElement);
 	    game.controls.PointerLock = new THREE.PointerLockControls(game.camera, game.renderer.domElement);
-            game.camera.position.z = 5;
+            game.camera.position.set(8, 8, 8);
             game.Sun = new THREE.DirectionalLight(0xffffff, 1, 1000);
             game.Sun.position.set(5,10,2);
             game.scene.add(game.Sun);
