@@ -21,7 +21,7 @@
     <body>
         <script>
             var game = {
-                version: "1.1.1",
+                version: "1.1.2",
                 materials: {},
                 blocks: {},
                 UI: {},
@@ -51,7 +51,7 @@
             game.renderer.shadowMap.enabled = true;
             game.AmbientLight = new THREE.AmbientLight(0x404040);
             game.scene.add(game.AmbientLight);
-	    game.clock = new THREE.clock();
+	    game.clock = new THREE.Clock();
 	    game.renderer.domElement.onclick = function (){
               if (game.controls.selection == "FreeCam") {
                 game.controls.PointerLock.lock();
