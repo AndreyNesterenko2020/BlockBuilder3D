@@ -21,7 +21,7 @@
     <body>
         <script>
             var game = {
-                version: "1.1.0",
+                version: "1.1.1",
                 materials: {},
                 blocks: {},
                 UI: {},
@@ -40,7 +40,9 @@
             game.geometry = new THREE.BoxGeometry();
             game.materials.defaultMaterial = new THREE.MeshLambertMaterial({map: game.textureLoader.load(missing)});
             game.scene.background = new THREE.Color(0xffffff);
-            //game.controls = new THREE.OrbitControls(game.camera, game.renderer.domElement)
+            game.Orbit = new THREE.OrbitControls(game.camera, game.renderer.domElement);
+	    game.FirstPerson = new THREE.FirstPersonControls(game.camera, game.renderer.domElement);
+	    game.PointerLock = new THREE.PointerLockControls(game.camera, game.renderer.domElement);
             game.camera.position.z = 5;
             game.Sun = new THREE.DirectionalLight(0xffffff, 1, 1000);
             game.Sun.position.set(5,10,2);
@@ -49,6 +51,7 @@
             game.renderer.shadowMap.enabled = true;
             game.AmbientLight = new THREE.AmbientLight(0x404040);
             game.scene.add(game.AmbientLight);
+	    game.clock = new THREE.clock();
 	    game.renderer.domElement.onclick = function (){
               if (game.controls.selection == "FreeCam") {
                 game.controls.PointerLock.lock();
