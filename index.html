@@ -19,6 +19,7 @@
         <script src="js/missing.js"></script>
     </head>
     <body>
+	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
                 version: "1.1.3",
@@ -82,7 +83,8 @@
                 document.title = document.title + game.version;
                 game.render();
                 game.UI.init();
-                game.block(0,0,0, "stone");
+                //game.block(0,0,0, "stone");
+		game.generation.generate();
             };
 	    window.addEventListener('resize', function (){
                 game.camera.aspect = window.innerWidth / window.innerHeight;
