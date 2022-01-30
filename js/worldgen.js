@@ -13,4 +13,7 @@ game.generation.generate = function () {
   game.generation.layer("stone", 4);
   game.generation.layer("dirt", 2);
   game.generation.layer("plant", 1);
+  for(loop = 1; loop <= Math.round(Math.random()*3)+1; loop++){
+    new game.entity("cow", [10,8,10]);
+  };
 }

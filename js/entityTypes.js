@@ -1,0 +1,3 @@
+game.entityTypes = {
+  cow: [10,1,[2.3,1.5,1], function(){var this_ = this; function animLoop(){this_.playAnimation("walk", 2, 0); setTimeout(function() {this_.playAnimation("walk", 0.5); setTimeout(animLoop, 500)}, 200)}; function walkLoop(){this_.lookAt([this_.getPosition().position[0]*Math.random()*2-5, this_.getPosition().position[1], this_.getPosition().position[2]*Math.random()*2-5], true); this_.movement[0] = 1; setTimeout(walkLoop, Math.random()*5000)}; animLoop(); setTimeout(function(){walkLoop()}, 200)}, function(){alert("ouch")},function(){this.playAnimation("death")},2.5, 2],
+};

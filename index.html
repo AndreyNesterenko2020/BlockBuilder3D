@@ -14,46 +14,51 @@
         <title>BlockBuilder3D version </title>
         <script src="js/three.js"></script>
         <script src="js/OrbitControls.js"></script>
-	<script src="js/PointerLockControls.js"></script>
+        <script src="js/PointerLockControls.js"></script>
         <script src="js/FirstPersonControls.js"></script>
         <script src="js/missing.js"></script>
+        <script src="js/ammo.js"></script>
+        <script src="js/GLTFLoader.js"></script>
     </head>
     <body>
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.1.6",
+                version: "1.2.0",
                 materials: {},
                 blocks: {},
                 UI: {},
-		generation: {},
-		controls: {selection: null},
+                generation: {},
+                controls: {selection: null},
                 FOV: 60,
                 range: 5,
+                physics: {},
+                debug: false,
             };
             game.scene = new THREE.Scene();
             game.textureLoader = new THREE.TextureLoader();
             game.raycaster = new THREE.Raycaster;
             game.camera = new THREE.PerspectiveCamera(game.FOV, window.innerWidth / window.innerHeight, 0.1, 1000);
             game.renderer = new THREE.WebGLRenderer();
-            game.renderer.setSize(window.innerWidth, window.innerHeight);
+            game.renderer.setSize(window.innerWidth, window.innerHeight*0.96);
             document.body.appendChild(game.renderer.domElement);
             game.geometry = new THREE.BoxGeometry();
             game.materials.defaultMaterial = new THREE.MeshLambertMaterial({map: game.textureLoader.load(missing)});
             game.scene.background = new THREE.Color(0xffffff);
             game.controls.Orbit = new THREE.OrbitControls(game.camera, game.renderer.domElement);
-	    game.controls.FirstPerson = new THREE.FirstPersonControls(game.camera, game.renderer.domElement);
-	    game.controls.PointerLock = new THREE.PointerLockControls(game.camera, game.renderer.domElement);
+            game.controls.FirstPerson = new THREE.FirstPersonControls(game.camera, game.renderer.domElement);
+            game.controls.PointerLock = new THREE.PointerLockControls(game.camera, game.renderer.domElement);
+            game.controls.FirstPerson.movementSpeed = 10;
             game.camera.position.set(8, 8, 8);
             game.Sun = new THREE.DirectionalLight(0xffffff, 1, 1000);
             game.Sun.position.set(5,10,2);
             game.scene.add(game.Sun);
-	    game.Sun.CastShadow	= true;
+            game.Sun.CastShadow	= true;
             game.renderer.shadowMap.enabled = true;
             game.AmbientLight = new THREE.AmbientLight(0x404040);
             game.scene.add(game.AmbientLight);
-	    game.clock = new THREE.Clock();
-	    game.renderer.domElement.onclick = function (){
+            game.clock = new THREE.Clock();
+            game.renderer.domElement.onclick = function (){
               if (game.controls.selection == "FreeCam") {
                 game.controls.PointerLock.lock();
               }
@@ -63,7 +68,7 @@
                 game.renderer.render(game.scene, game.camera);
                 game.camera.fov = game.FOV;
                 game.camera.updateProjectionMatrix();
-		game.controls.FirstPerson.update(game.clock.getDelta())
+                game.controls.FirstPerson.update(game.clock.getDelta())
                 if(game.controls.selection == "FreeCam"){
                   game.controls.FirstPerson.enabled = true;
                   game.controls.PointerLock.enabled = true;
@@ -84,18 +89,28 @@
                 game.render();
                 game.UI.init();
                 //game.block(0,0,0, "stone");
-		game.generation.generate();
+                game.physics.collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
+                game.physics.dispatcher = new Ammo.btCollisionDispatcher(game.physics.collisionConfiguration);
+                game.physics.overlappingPairCache = new Ammo.btDbvtBroadphase();
+                game.physics.solver = new Ammo.btSequentialImpulseConstraintSolver();
+                game.physics.physicsWorld = new Ammo.btDiscreteDynamicsWorld(game.physics.dispatcher, game.physics.overlappingPairCache, game.physics.solver, game.physics.collisionConfiguration);
+                game.physics.physicsWorld.setGravity(new Ammo.btVector3(0, -9.81, 0));
+                game.physics.tmpTrans = new Ammo.btTransform();
+                game.generation.generate();
+                game.entityPhysics();
             };
-	    window.addEventListener('resize', function (){
+            window.addEventListener('resize', function (){
                 game.camera.aspect = window.innerWidth / window.innerHeight;
                 game.renderer.setSize( window.innerWidth, window.innerHeight );
             });
             window.onload = function (){
-                game.init();
+                Ammo().then(game.init);
             };
         </script>
         <script src="js/block.js"></script>
         <script src="js/UI.js"></script>
-	<script src="js/worldgen.js"></script>
+        <script src="js/worldgen.js"></script>
+        <script src="js/entity.js"></script>
+        <script src="js/entityTypes.js"></script>
     </body>
 </html>
