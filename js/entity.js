@@ -103,6 +103,7 @@ game.entity = class {
       this_.hitboxCombat.scale.set(game.entityTypes[type][2][0], game.entityTypes[type][2][1], game.entityTypes[type][2][2]);
       game.scene.add(this_.hitboxCombat);
       this_.range = game.entityTypes[type][7];
+      this_.physicsEnabled = true;
       this_.hitboxDirection = new THREE.Line(new THREE.BoxGeometry(), new THREE.LineBasicMaterial({color: "black"}));
       this_.hitboxDirection.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0)]);
       this_.hitboxDirection.material.transparent = true;
@@ -247,7 +248,7 @@ game.entityPhysics = function(){
         let objAmmo = game.entities[i].hitboxPhysics;
         let motion = objAmmo.getMotionState();
         game.entities[i].hitboxCombat.updateMatrixWorld();
-        if (motion) {
+        if (motion && game.entities[i].physicsEnabled) {
             motion.getWorldTransform(game.physics.tmpTrans);
             objThree.position.set(game.physics.tmpTrans.getOrigin().x(), game.physics.tmpTrans.getOrigin().y(), game.physics.tmpTrans.getOrigin().z());
             game.entities[i].hitboxCombat.position.set(game.physics.tmpTrans.getOrigin().x(), game.physics.tmpTrans.getOrigin().y(), game.physics.tmpTrans.getOrigin().z());
