@@ -93,7 +93,7 @@ game.entity = class {
       let rbInfo = new Ammo.btRigidBodyConstructionInfo(10, motionState, colShape, localInertia);
       let body = new Ammo.btRigidBody(rbInfo);
       body.setAngularFactor(0, 0, 0);
-      body.setFriction(-0.25);
+      body.setFriction(0.25);
       game.physics.physicsWorld.addRigidBody(body); 
       this_.hitboxPhysics = body;
       this_.hitboxCombat = new THREE.Mesh(game.geometry);
