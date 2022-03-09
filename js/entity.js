@@ -104,7 +104,7 @@ game.entity = class {
       game.scene.add(this_.hitboxCombat);
       this_.range = game.entityTypes[type][7];
       this_.hitboxDirection = new THREE.Line(new THREE.BoxGeometry(), new THREE.LineBasicMaterial({color: "black"}));
-      this_.hitboxDirection.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(this_.range, 0, 0)]);
+      this_.hitboxDirection.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0)]);
       this_.hitboxDirection.material.transparent = true;
       game.scene.add(this_.hitboxDirection);
       game.entities[Object.keys(game.entities).length+1] = this_;
@@ -199,6 +199,7 @@ game.entityPhysics = function(){
     setTimeout(game.entityPhysics, 1);
     game.physics.physicsWorld.stepSimulation(game.clock.getDelta(), 10 );
     for (let i = 1; i < Object.keys(game.entities).length + 1; i++) {
+        game.entities[i].hitboxDirection.scale.x = game.entities[i].range;
         if(game.debug == true){
           game.entities[i].hitboxCombat.material.opacity = 1;
           game.entities[i].hitboxDirection.material.opacity = 1;
