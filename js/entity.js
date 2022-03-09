@@ -150,24 +150,25 @@ game.entity = class {
         if(typeof rot == "number"){
           rot = [0, rot, 0];
         };
-        var force = this_.hitboxPhysics.getLinearVelocity();
-        game.physics.physicsWorld.removeRigidBody(this_.hitboxPhysics.a);
+        //var force = this_.hitboxPhysics.getLinearVelocity();
+        //game.physics.physicsWorld.removeRigidBody(this_.hitboxPhysics.a);
         let transform = new Ammo.btTransform();
         transform.setIdentity();
         transform.setOrigin(new Ammo.btVector3(pos[0], pos[1], pos[2]));
         transform.setRotation(new Ammo.btQuaternion(game.eulerQuaternion(rot)[0], game.eulerQuaternion(rot)[1], game.eulerQuaternion(rot)[2], game.eulerQuaternion(rot)[3]));
-        let motionState = new Ammo.btDefaultMotionState(transform);
-        let colShape = new Ammo.btBoxShape(new Ammo.btVector3(game.entityTypes[this_.type][2][0]/2, game.entityTypes[this_.type][2][1]/2, game.entityTypes[this_.type][2][2]/2));
-        colShape.setMargin(0.05);
-        let localInertia = new Ammo.btVector3(0, 0, 0);
-        colShape.calculateLocalInertia(10, localInertia );
-        let rbInfo = new Ammo.btRigidBodyConstructionInfo(10, motionState, colShape, localInertia);
-        let body = new Ammo.btRigidBody(rbInfo);
-        body.setAngularFactor(0, 0, 0);
-        body.setFriction(-0.25);
-        game.physics.physicsWorld.addRigidBody(body); 
-        body.setLinearVelocity(force);
-        this_.hitboxPhysics = body;
+        this_.hitboxPhysics.setWorldTransform(transform);
+        //let motionState = new Ammo.btDefaultMotionState(transform);
+        //let colShape = new Ammo.btBoxShape(new Ammo.btVector3(game.entityTypes[this_.type][2][0]/2, game.entityTypes[this_.type][2][1]/2, game.entityTypes[this_.type][2][2]/2));
+        //colShape.setMargin(0.05);
+        //let localInertia = new Ammo.btVector3(0, 0, 0);
+        //colShape.calculateLocalInertia(10, localInertia );
+        //let rbInfo = new Ammo.btRigidBodyConstructionInfo(10, motionState, colShape, localInertia);
+        //let body = new Ammo.btRigidBody(rbInfo);
+        //body.setAngularFactor(0, 0, 0);
+        //body.setFriction(-0.25);
+        //game.physics.physicsWorld.addRigidBody(body); 
+        //body.setLinearVelocity(force);
+        //this_.hitboxPhysics = body;
       };
       this_.getPosition = function() {
         return({position: [this_.hitboxCombat.position.x, this_.hitboxCombat.position.y, this_.hitboxCombat.position.z], rotation: game.quaternionEuler(this_.hitboxCombat.quaternion)});
@@ -269,6 +270,8 @@ game.entityPhysics = function(){
             var temporaryEuler = new THREE.Vector3((game.entities[i].movement[0] - game.entities[i].movement[1]) * game.entities[i].movementSpeed, 0, (game.entities[i].movement[2] - game.entities[i].movement[3]) * game.entities[i].movementSpeed).applyQuaternion(game.entities[i].hitboxCombat.quaternion);
             if(game.entities[i].health != 0) {
               objAmmo.setLinearVelocity(new Ammo.btVector3(temporaryEuler.x, objAmmo.getLinearVelocity().y(), temporaryEuler.z));
+            } else {
+              objAmmo.setLinearVelocity(new Ammo.btVector3(0, objAmmo.getLinearVelocity().y(), 0));
             };
         };
     };
