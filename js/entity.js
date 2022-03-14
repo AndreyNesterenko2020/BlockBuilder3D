@@ -200,7 +200,7 @@ game.entity = class {
         for(var i in this_){
             delete this_[i];
         };
-        this_[0]="deleted"
+        this_[0] = "deleted";
       };
       this_.oncreate();
     });
@@ -210,7 +210,7 @@ game.entityPhysics = function(){
     setTimeout(game.entityPhysics, 1);
     game.physics.physicsWorld.stepSimulation(game.clock.getDelta(), 10 );
     for (let i = 1; i < Object.keys(game.entities).length + 1; i++) {
-        if(game.entities[i][0] == "delete"){
+        if(game.entities[i][0] == "deleted"){
           continue;
         };
         game.entities[i].hitboxDirection.scale.x = game.entities[i].range;
