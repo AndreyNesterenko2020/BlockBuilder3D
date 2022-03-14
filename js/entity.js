@@ -198,7 +198,7 @@ game.entity = class {
         game.scene.remove(this_.hitboxDirection);
         game.scene.remove(this_.object);
         for(var i in this_){
-            delete entity[i];
+            delete this_[i];
         };
         this_[0]="deleted"
       };
