@@ -192,6 +192,16 @@ game.entity = class {
         this_.setPosition(this_.getPosition().position, rot);
         game.scene.remove(obj);
       };
+      this_.delete = function () {
+        game.physics.physicsWorld.removeRigidBody(this_.hitboxPhysics.a);
+        game.scene.remove(this_.hitboxCombat);
+        game.scene.remove(this_.hitboxDirection);
+        game.scene.remove(this_.object);
+        for(var i in this_){
+            delete entity[i];
+        };
+        this_[0]="deleted"
+      };
       this_.oncreate();
     });
   };
@@ -200,6 +210,9 @@ game.entityPhysics = function(){
     setTimeout(game.entityPhysics, 1);
     game.physics.physicsWorld.stepSimulation(game.clock.getDelta(), 10 );
     for (let i = 1; i < Object.keys(game.entities).length + 1; i++) {
+        if(game.entities[i][0] == "delete"){
+          continue;
+        };
         game.entities[i].hitboxDirection.scale.x = game.entities[i].range;
         if(game.debug == true){
           game.entities[i].hitboxCombat.material.opacity = 1;
