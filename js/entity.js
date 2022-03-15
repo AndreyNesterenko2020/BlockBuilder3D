@@ -1,4 +1,16 @@
 game.entities = {};
+game.getEntitiesByName = function (name) {
+  var result = [];
+  for(var i = 1; i < Object.keys(game.entities).length+1; i++){
+    if(game.entities[i][0] == "deleted"){
+      continue;
+    };
+    if(game.entities[i].name == name){
+      result.push(game.entities[i]);
+    };
+  }
+  return result;
+};
 game.eulerQuaternion = function (rot) {
   var c1 = Math.cos(rot[1]*(Math.PI / 180)/2);
   var s1 = Math.sin(rot[1]*(Math.PI / 180)/2);
