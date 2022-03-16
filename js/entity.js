@@ -175,7 +175,7 @@ game.entity = class {
       this_.attack = function (){
         var objects = Object.values(game.blocks);
         for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
-          if(game.entities[loop] != this_){
+          if(game.entities[loop] != this_ && game.entities[loop][0] != "deleted"){
             objects.push(game.entities[loop].hitboxCombat);
           };
         };
