@@ -180,9 +180,9 @@ game.entity = class {
           };
         };
         var raycaster = new THREE.Raycaster();
-        raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxCombat.quaternion), 0, this_.range);
+        raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxCombat.quaternion), 0, Infinity);
         var intersects = raycaster.intersectObjects(objects);
-        if(intersects[0] != undefined) {
+        if(intersects[0] != undefined && intersects[0].distance <= this_.range) {
           if(intersects[0].object.entity) {
             intersects[0].object.entity.health -= this_.attackDamage;
             intersects[0].object.entity.ondamage(this_);
