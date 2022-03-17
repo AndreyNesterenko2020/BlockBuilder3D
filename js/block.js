@@ -4,12 +4,12 @@ game.block = function (x,y,z, type){
   var test = new Image()
   test.src = "textures/"+type+".png"
   test.onload = function () {
-    if(game.materials[type]) {
+    if(game.materials[type.toLowerCase()]) {
       
     } else {
-      game.materials[type] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+".png")});
+      game.materials[type.toLowerCase()] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+".png")});
     };
-    block.material = game.materials[type];
+    block.material = game.materials[type.toLowerCase()];
   };
   test.onerror = function (){
     block.material = game.materials.defaultMaterial;
