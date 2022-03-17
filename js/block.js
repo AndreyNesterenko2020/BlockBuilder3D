@@ -7,7 +7,7 @@ game.block = function (x,y,z, type){
     if(game.materials[type]) {
       
     } else {
-      game.materials[type] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type+".png")});
+      game.materials[type] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+String.toLowerCase(type)+".png")});
     };
     block.material = game.materials[type];
   };
