@@ -1,7 +1,7 @@
 game.UI.commands = {
   //3 PARAMETERS MAX
   help: function (a){
-    return "help [?] - get help<br>kill [all|random|notplayer|me] - kill an entity<br>spawn [type] [position] [rotation] - spawn an entity. Entity types: cow, bull, pig, player<br>Position and rotation format: [x, y, z]<br>setBlock [type] [position] - change a block. Block types: dirt, mud, plant, stone, wood, world_barrier.<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
+    return "help [me] - get help<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [position] [?rotation] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
   },
   kill: function (selector){
     var kill = [];
@@ -10,8 +10,11 @@ game.UI.commands = {
         if(game.entities[i][0]){
           continue;
         };
-        game.entities[i].health = 0;
+        if(game.entities[i].health == 0){
+          continue;
+        };
         kill.push(game.entities[i].name);
+        game.entities[i].health = 0;
       };
       return "Killed "+kill;
     };
@@ -20,11 +23,14 @@ game.UI.commands = {
         if(game.entities[i][0]){
           continue;
         };
+        if(game.entities[i].health == 0){
+          continue;
+        };
         if(game.entities[i].type == "player"){
           continue;
         };
-        game.entities[i].health = 0;
         kill.push(game.entities[i].name);
+        game.entities[i].health = 0;
       };
       return "Killed "+kill;
     };
@@ -40,13 +46,32 @@ game.UI.commands = {
         entities.push(game.entities[i]);
       };
       var entity = entities[Math.floor(Math.random()*entities.length)];
-      entity.health = 0;
       kill.push(entity.name);
+      entity.health = 0;
       return "Killed "+kill;
     };
     if(selector == "me"){
-      game.player.health = 0;
+      if(game.player.health == 0){
+        return "Player is already dead";
+      };
       kill.push(game.player.name);
+      game.player.health = 0;
+      return "Killed "+kill;
+    };
+    if(game.entityTypes[selector]){
+      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+        if(game.entities[i][0]){
+          continue;
+        };
+        if(game.entities[i].health == 0){
+          continue;
+        };
+        if(game.entities[i].type != selector){
+          continue;
+        };
+        kill.push(game.entities[i].name);
+        game.entities[i].health = 0;
+      };
       return "Killed "+kill;
     };
     return "incorrect parameter.";
@@ -59,7 +84,7 @@ game.UI.commands = {
       return "Invalid position.";
     };
     if(typeof(eval(rotation)) != "object"){
-      return "Invalid rotation.";
+      rotation = "[0, 0, 0]";
     };
     new game.entity(type, eval(position), eval(rotation));
     return "Spawned new "+type+" at position "+position+" at rotation "+rotation;
@@ -73,6 +98,71 @@ game.UI.commands = {
     };
     new game.block(eval(position)[0], eval(position)[1], eval(position)[2], type);
     return "Placed new block";
+  },
+  gamemode: function (type) {
+    if(type != 0 && type != 1) {
+      return "Invalid gamemode";
+    };
+    game.gamemode = type;
+    return "Set player's gamemode to "+type;
+  },
+  delete: function (selector){
+    var kill = [];
+    if(selector == "all"){
+      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+        if(game.entities[i][0]){
+          continue;
+        };
+        kill.push(game.entities[i].name);
+        game.entities[i].delete();
+      };
+      return "Deleted "+kill;
+    };
+    if(selector == "notplayer"){
+      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+        if(game.entities[i][0]){
+          continue;
+        };
+        if(game.entities[i].type == "player"){
+          continue;
+        };
+        kill.push(game.entities[i].name);
+        game.entities[i].delete();
+      };
+      return "Deleted "+kill;
+    };
+    if(selector == "random"){
+      var entities = [];
+      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+        if(game.entities[i][0]){
+          continue;
+        };
+        entities.push(game.entities[i]);
+      };
+      var entity = entities[Math.floor(Math.random()*entities.length)];
+      kill.push(entity.name);
+      entity.delete();
+      return "Deleted "+kill;
+    };
+    if(selector == "me"){
+      kill.push(game.player.name);
+      game.player.delete();
+      return "Deleted "+kill;
+    };
+    if(game.entityTypes[selector]){
+      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+        if(game.entities[i][0]){
+          continue;
+        };
+        if(game.entities[i].type != selector){
+          continue;
+        };
+        kill.push(game.entities[i].name);
+        game.entities[i].delete();
+      };
+      return "Deleted "+kill;
+    };
+    return "incorrect parameter.";
   },
 };
 game.UI.selection = "Stone";
@@ -89,6 +179,11 @@ game.UI.respawn = function (){
   for(var i = 0; i < game.getEntitiesByName("bull").length; i++){
     if(game.getEntitiesByName("bull")[i].health != 0){
       game.getEntitiesByName("bull")[i].health = game.getEntitiesByName("bull")[i].maxHealth;
+    };
+  };
+  for(var i = 0; i < game.getEntitiesByName("pig").length; i++){
+    if(game.getEntitiesByName("pig")[i].health != 0){
+      game.getEntitiesByName("pig")[i].health = game.getEntitiesByName("pig")[i].maxHealth;
     };
   };
 };
@@ -108,6 +203,7 @@ game.UI.init = function (){
     game.UI.add("Plant");
     game.UI.add("Wood");
     game.UI.add("Mud");
+    game.UI.add("Tree");
     game.controls.selection = "FreeCam"
     game.UI.settings = document.createElement("div");
     game.UI.settings.style.top = "20%";
@@ -141,7 +237,7 @@ game.UI.init = function (){
     game.UI.lock.style.position = "absolute";
     game.UI.lock.style.left = "40%";
     game.UI.lock.style.top = "40%";
-    game.UI.lock.innerHTML = "click any where to lock mouse.";
+    game.UI.lock.innerHTML = "click anywhere to lock mouse.";
     game.UI.lock.style.transition = "opacity 2s";
     document.body.appendChild(game.UI.lock);
     game.UI.console = document.createElement("div");
@@ -198,18 +294,19 @@ game.UI.die = function () {
   deathScreen.style.opacity = 0.5;
   deathScreen.style.textAlign = "center";
   document.body.appendChild(deathScreen);
+  game.UI.consoleMessage(game.player.name+" was Killed by "+game.lastAttacker.name);
 };
-document.body.style.fontFamily = "arial";
+document.body.style.fontFamily = "BlockBuilder3D";
 document.body.addEventListener("keydown", function(event) {
     if(event.keyCode == 13){
       game.UI.consoleMessage(document.getElementById("console_input").value);
       try{
-      console.log("game.UI.commands."+document.getElementById("console_input").value.split("/")[1].split(" ")[0]+"('"+document.getElementById("console_input").value.split(document.getElementById("console_input").value.split(" ")[0])[1].split(" ")[1].replace(",", "','")+"')")
         game.UI.consoleMessage(eval("game.UI.commands."+document.getElementById("console_input").value.split("/")[1].split(" ")[0]+"('"+document.getElementById("console_input").value.split(document.getElementById("console_input").value.split(" ")[0])[1].split(" ")[1].replace(";", "','").replace(";", "','")+"')"));
       } catch (error) {
-        game.UI.consoleMessage("Unknown command. Use /help ? for help.");
+        game.UI.consoleMessage("Unknown command. Use /help me for help.");
         if(game.debug){
           game.UI.consoleMessage(error);
+          console.error(error);
         };
       };
       document.getElementById("console_input").value = "";
@@ -228,4 +325,20 @@ document.body.addEventListener("keydown", function(event) {
       };
       document.getElementById(game.UI.inventory[event.key-1]).style.opacity = 2;
     };
+});
+document.body.addEventListener("wheel", function(event) {
+  console.log(game.UI.inventory.indexOf(game.UI.selection)+event.deltaY/Math.abs(event.deltaY), game.UI.inventory.length);
+  if(game.UI.inventory.indexOf(game.UI.selection)+event.deltaY/Math.abs(event.deltaY) > game.UI.inventory.length-1){
+    game.UI.selection = game.UI.inventory[0];
+  } else {
+    if(game.UI.inventory.indexOf(game.UI.selection)+event.deltaY/Math.abs(event.deltaY) < 0){
+      game.UI.selection = game.UI.inventory[game.UI.inventory.length-1];
+    } else {
+      game.UI.selection = game.UI.inventory[game.UI.inventory.indexOf(game.UI.selection)+event.deltaY/Math.abs(event.deltaY)];
+    };
+  };
+  for(loop = 0; loop <= document.getElementById(game.UI.selection).parentElement.getElementsByTagName("img").length-1; loop++){
+    game.UI.toolbar.getElementsByTagName("img")[loop].style.opacity = 0.5;
+  };
+  document.getElementById(game.UI.selection).style.opacity = 2;
 });

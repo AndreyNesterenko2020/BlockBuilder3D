@@ -32,6 +32,10 @@ game.generation.barrier = function (width, height) {
   };
 };
 game.generation.tree = function(x, y, z) {
+  if(game.getBlock(x, y-1, z)){
+    game.getBlock(x, y-1, z).delete(true);
+  };
+  new game.block(x, y-1, z, "dirt");
   new game.block(x, y, z, "wood");
   new game.block(x, y+1, z, "wood");
   new game.block(x, y+2, z, "wood");
@@ -52,80 +56,83 @@ game.generation.tree = function(x, y, z) {
   new game.block(x, y+4, z-1, "plant");
 };
 game.generation.generate = function () {
+  var size = 32;
+  if(game.generation.chromebook){
+    size = 16;
+    game.generation.mode = "simple";
+  };
   if(game.generation.mode == "simple") {
-    game.generation.layer("plant", 1, 32);
-    game.generation.barrier(32, 4);
+    game.generation.layer("plant", 1, size);
+    game.generation.barrier(size+1, 4);
   };
   if(game.generation.mode == "medium") {
-    game.generation.layer("dirt", 1, 32);
-    game.generation.layer("plant", 1, 32);
-    game.generation.barrier(32, 5);
+    game.generation.layer("dirt", 1, size);
+    game.generation.layer("plant", 1, size);
+    game.generation.barrier(size+1, 5);
   };
   if(game.generation.mode == "complex") {
-    game.generation.layer("stone", 1, 32);
-    game.generation.layer("dirt", 1, 32);
-    game.generation.layer("plant", 1, 32);
-    game.generation.barrier(32, 6);
-  };
-  if(game.generation.trees) {
-    for(var i = 0; i <= Math.random()*7+1; i++){
-      game.generation.tree(Math.round(Math.random()*30)+1, game.generation.top, Math.round(Math.random()*30)+1);
-    };
+    game.generation.layer("stone", 1, size);
+    game.generation.layer("dirt", 1, size);
+    game.generation.layer("plant", 1, size);
+    game.generation.barrier(size+1, 6);
   };
   for(loop = 1; loop <= Math.round(Math.random())+1; loop++){
-    new game.entity("bull", [20,8,20]);
+    new game.entity("bull", [12,8,12]);
   };
   for(loop = 1; loop <= Math.round(Math.random()*3)+1; loop++){
-    new game.entity("cow", [20,8,20]);
+    new game.entity("cow", [12,8,12]);
+  };
+  for(loop = 1; loop <= Math.round(Math.random()*3)+1; loop++){
+    new game.entity("pig", [12,8,12]);
   };
   if(game.generation.puddle){
-    game.generation.puddle = [Math.floor(Math.random()*30), game.generation.top-1, Math.floor(Math.random()*30)+1];
+    game.generation.puddle = [Math.floor(Math.random()*(size-2)), game.generation.top-1, Math.floor(Math.random()*(size-2))+1];
     if (game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2])){
-      game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2]).delete();
+      game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2]).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2])){
-      game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2]).delete();
+      game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2]).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2])){
-      game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2]).delete();
+      game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2]).delete(true);
     }
     if (game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2])){
-      game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2]).delete();
+      game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2]).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2])){
-      game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2]).delete();
+      game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2]).delete(true);
     };
     
     if (game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2]+1)){
-      game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2]+1).delete();
+      game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2]+1).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2]+1)){
-      game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2]+1).delete();
+      game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2]+1).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2]+1)){
-      game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2]+1).delete();
+      game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2]+1).delete(true);
     }
     if (game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2]+1)){
-      game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2]+1).delete();
+      game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2]+1).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2]+1)){
-      game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2]+1).delete();
+      game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2]+1).delete(true);
     };
     
     if (game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2]-1)){
-      game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2]-1).delete();
+      game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2]-1).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2]-1)){
-      game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2]-1).delete();
+      game.getBlock(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2]-1).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2]-1)){
-      game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2]-1).delete();
+      game.getBlock(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2]-1).delete(true);
     }
     if (game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2]-1)){
-      game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2]-1).delete();
+      game.getBlock(game.generation.puddle[0]-1, game.generation.puddle[1], game.generation.puddle[2]-1).delete(true);
     };
     if (game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2]-1)){
-      game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2]-1).delete();
+      game.getBlock(game.generation.puddle[0]-2, game.generation.puddle[1], game.generation.puddle[2]-1).delete(true);
     };
     new game.block(game.generation.puddle[0]+1, game.generation.puddle[1], game.generation.puddle[2], "mud");
     new game.block(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2], "mud");
@@ -157,6 +164,11 @@ game.generation.generate = function () {
     new game.block(game.generation.puddle[0], game.generation.puddle[1]-1, game.generation.puddle[2]-1, "dirt");
     new game.block(game.generation.puddle[0]-1, game.generation.puddle[1]-1, game.generation.puddle[2]-1, "dirt");
     new game.block(game.generation.puddle[0]-2, game.generation.puddle[1]-1, game.generation.puddle[2]-1, "dirt");
+  };
+  if(game.generation.trees) {
+    for(var i = 0; i <= Math.random()*7+1; i++){
+      game.generation.tree(Math.round(Math.random()*(size-2))+1, game.generation.top, Math.round(Math.random()*(size-2))+1);
+    };
   };
   game.player = new game.entity("player", [10,15,10]);
   document.getElementById("menu").style.display = "none";

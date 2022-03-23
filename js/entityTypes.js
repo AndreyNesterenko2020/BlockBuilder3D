@@ -6,6 +6,17 @@ game.entityTypes = {
         this_.animations[0]=0;
         return;
       };
+      var objects = Object.values(game.blocks);
+      var raycaster = new THREE.Raycaster();
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      var intersects = raycaster.intersectObjects(objects);
+      if(intersects[0] != undefined && intersects[0].distance < 1.5){
+        raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
+        var intersects = raycaster.intersectObjects(objects);
+        if(intersects[0] != undefined && intersects[0].distance < 1.5) {
+          this_.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0,5,0));
+        };
+      };
       this_.playAnimation("walk", 2, 0);
       setTimeout(function() {
         this_.playAnimation("walk", 0.5);
@@ -56,11 +67,23 @@ game.entityTypes = {
   bull: [50,25,[2.5,1.75,1.25], function(){
     var this_ = this;
     game.bullAnger = false;
+    game.bullThrowOff = false;
     var attack = true;
     function animLoop(){
       if(this_.health == 0 || this_.health == undefined){
         this_.animations[2] = 0;
         return;
+      };
+      var objects = Object.values(game.blocks);
+      var raycaster = new THREE.Raycaster();
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      var intersects = raycaster.intersectObjects(objects);
+      if(intersects[0] != undefined && intersects[0].distance < 1.5){
+        raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
+        var intersects = raycaster.intersectObjects(objects);
+        if(intersects[0] != undefined && intersects[0].distance < 1.5) {
+          this_.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0,5,0));
+        };
       };
       this_.playAnimation("walk", 2, 0);
       setTimeout(function() {
@@ -71,8 +94,10 @@ game.entityTypes = {
         if(this_.health == 0 || this_.health == undefined){
           return
         };
+        game.bullThrowOff = false;
         if(!game.bullAnger) {
           this_.animations[2] = 0;
+          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
         } else {
           if(this_.animations[2] == 0){
             this_.playAnimation("charge");
@@ -108,11 +133,32 @@ game.entityTypes = {
           this_.lookAt(game.player.getPosition().position, true);
         };
         this_.movement[0] = 1;
+        if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]+1) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+          game.bullThrowOff = true;
+          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+        };
+        if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]+2) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+          game.bullThrowOff = true;
+          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+        };
+        if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]-1) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+          game.bullThrowOff = true;
+          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+        };
+        if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]-2) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+          game.bullThrowOff = true;
+          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+        };
         if(!game.bullAnger){
           setTimeout(walkLoop, Math.random()*5000);
         } else {
-          setTimeout(walkLoop, 100);
+          if(game.bullThrowOff){
+            setTimeout(walkLoop, 1000);
+          } else {
+            setTimeout(walkLoop, 100);
+          };
         };
+
       };
       function healLoop(){
         if(this_.health <= 0){
@@ -137,6 +183,17 @@ game.entityTypes = {
       if(this_.health == 0 || this_.health == undefined){
         this_.animations[0]=0;
         return;
+      };
+      var objects = Object.values(game.blocks);
+      var raycaster = new THREE.Raycaster();
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      var intersects = raycaster.intersectObjects(objects);
+      if(intersects[0] != undefined && intersects[0].distance < 1.5){
+        raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
+        var intersects = raycaster.intersectObjects(objects);
+        if(intersects[0] != undefined && intersects[0].distance < 1.5) {
+          this_.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0,2.5,0));
+        };
       };
       this_.playAnimation("walk", 2, 0);
       setTimeout(function() {
@@ -227,6 +284,11 @@ game.entityTypes = {
         sin += 1;
         this_.animations[0] = Math.abs(Math.sin(sin));
         var objects = Object.values(game.blocks);
+        for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
+          if(game.entities[loop] != this_ && game.entities[loop][0] != "deleted"){
+            objects.push(game.entities[loop].hitboxCombat);
+          };
+        };
         var raycaster = new THREE.Raycaster();
         raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
         var intersects = raycaster.intersectObjects(objects);

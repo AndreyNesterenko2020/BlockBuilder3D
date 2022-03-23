@@ -72,11 +72,11 @@ game.block = class {
         game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
       };
     };
-    this.delete = function () {
+    this.delete = function (noaudio) {
       if(game.blockTypes[this.type]){
         this.onbreak();
       };
-      if(audio) {
+      if(!noaudio) {
         game.UI.sound(this.type+Math.round(Math.random()*2+1));
       };
       this.block.position.y = -255;
