@@ -130,6 +130,7 @@
                 game.physics.tmpTrans = new Ammo.btTransform();
                 game.generation.generate();
                 game.entityPhysics();
+                scrollTo(0,0);
             };
             window.addEventListener('resize', function (){
                 game.camera.aspect = window.innerWidth / window.innerHeight;
