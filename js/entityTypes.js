@@ -11,11 +11,7 @@ game.entityTypes = {
       raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
       if(intersects[0] != undefined && intersects[0].distance < 1.5){
-        raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
-        var intersects = raycaster.intersectObjects(objects);
-        if(intersects[0] != undefined && intersects[0].distance < 1.5) {
-          this_.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0,5,0));
-        };
+        this_.jump();
       };
       this_.playAnimation("walk", 2, 0);
       setTimeout(function() {
@@ -59,11 +55,16 @@ game.entityTypes = {
       healLoop();
     }, function(){
       this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 2, 0));
+      if(!game.bullAnger){
+        game.UI.sound("bull_anger");
+      };
       game.bullAnger = true;
+      game.UI.sound("cow"+Math.round(Math.random()*2+1));
     }, function(){
+      game.UI.sound("cow"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },2.5, 2],
+    },2.5, 2, 3],
   bull: [50,25,[2.5,1.75,1.25], function(){
     var this_ = this;
     game.bullAnger = false;
@@ -79,11 +80,7 @@ game.entityTypes = {
       raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
       if(intersects[0] != undefined && intersects[0].distance < 1.5){
-        raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
-        var intersects = raycaster.intersectObjects(objects);
-        if(intersects[0] != undefined && intersects[0].distance < 1.5) {
-          this_.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0,5,0));
-        };
+        this_.jump();
       };
       this_.playAnimation("walk", 2, 0);
       setTimeout(function() {
@@ -96,7 +93,9 @@ game.entityTypes = {
         };
         game.bullThrowOff = false;
         if(!game.bullAnger) {
+          this_.movementSpeed = 3;
           this_.animations[2] = 0;
+          this_.animations[3] = 0;
           this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
         } else {
           if(this_.animations[2] == 0){
@@ -122,7 +121,8 @@ game.entityTypes = {
                   setTimeout(function(){this_.playAnimation("attack", 1, 0), 100});
                   if(game.player.health <= 0){
                     game.bullAnger = false;
-                    this_.movementSpeed = 3;
+                    walkLoop();
+                    return;
                   };
                 };
                 attack = false;
@@ -130,24 +130,32 @@ game.entityTypes = {
               };
             };
           };
-          this_.lookAt(game.player.getPosition().position, true);
+          try {
+            this_.lookAt(game.player.getPosition().position, true);
+          } catch (e){
+            game.bullAnger = false;
+          };
         };
         this_.movement[0] = 1;
-        if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]+1) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+        try {
+          if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]+1) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+            game.bullThrowOff = true;
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+          };
+          if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]+2) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+            game.bullThrowOff = true;
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+          };
+          if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]-1) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+            game.bullThrowOff = true;
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+          };
+          if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]-2) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+            game.bullThrowOff = true;
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+          };
+        } catch (e) {
           game.bullThrowOff = true;
-          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
-        };
-        if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]+2) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
-          game.bullThrowOff = true;
-          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
-        };
-        if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]-1) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
-          game.bullThrowOff = true;
-          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
-        };
-        if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]-2) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
-          game.bullThrowOff = true;
-          this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
         };
         if(!game.bullAnger){
           setTimeout(walkLoop, Math.random()*5000);
@@ -172,11 +180,16 @@ game.entityTypes = {
       healLoop();
     }, function(){
       this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 1, 0));
+      if(!game.bullAnger){
+        game.UI.sound("bull_anger");
+      };
       game.bullAnger = true;
+      game.UI.sound("cow"+Math.round(Math.random()*2+1));
     }, function(){
+      game.UI.sound("cow"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },3, 3],
+    },3, 3, 3],
   pig: [30,10,[1.5,0.9,0.6], function(){
     var this_ = this;
     function animLoop(){
@@ -188,7 +201,7 @@ game.entityTypes = {
       var raycaster = new THREE.Raycaster();
       raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
-      if(intersects[0] != undefined && intersects[0].distance < 1.5){
+      if(intersects[0] != undefined && intersects[0].distance < 0.45){
         raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
         var intersects = raycaster.intersectObjects(objects);
         if(intersects[0] != undefined && intersects[0].distance < 1.5) {
@@ -210,7 +223,9 @@ game.entityTypes = {
         } else {
           this_.movementSpeed = 3;
           if(game.generation.puddle){
-            this_.lookAt(game.generation.puddle, Math.round(Math.random()*360));
+            this_.lookAt(game.generation.puddle, true);
+          } else {
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
           };
         };
         this_.movement[0] = 1;
@@ -228,12 +243,17 @@ game.entityTypes = {
       healLoop();
     }, function(){
       this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 2, 0));
+      if(!game.bullAnger){
+        game.UI.sound("bull_anger");
+      };
       game.bullAnger = true;
+      game.UI.sound("pig"+Math.round(Math.random()*2+1));
     }, function(){
+      game.UI.sound("pig"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },3, 2],
-  player: [100,1,[1,2,1], function(){
+    },3, 2, 3],
+  player: [100,1,[1,1.9,1], function(){
     var this_ = this;
     var sin = 0;
     var walk = game.UI.sound("walk");
@@ -283,18 +303,7 @@ game.entityTypes = {
       if(event.key == " "){
         sin += 1;
         this_.animations[0] = Math.abs(Math.sin(sin));
-        var objects = Object.values(game.blocks);
-        for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
-          if(game.entities[loop] != this_ && game.entities[loop][0] != "deleted"){
-            objects.push(game.entities[loop].hitboxCombat);
-          };
-        };
-        var raycaster = new THREE.Raycaster();
-        raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
-        var intersects = raycaster.intersectObjects(objects);
-        if(intersects[0] != undefined && intersects[0].distance < 1.5) {
-          this_.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0,5,0));
-        };
+        this_.jump();
       };
     });
     document.body.addEventListener("keyup", function (event){
@@ -333,12 +342,14 @@ game.entityTypes = {
         return;
       };
       if(game.gamemode == 0){
+        game.controls.selection = "Player";
         game.camera.position.x = this_.getPosition().position[0];
         game.camera.position.y = this_.getPosition().position[1];
         game.camera.position.z = this_.getPosition().position[2];
         this_.setPosition(this_.getPosition().position, rotation);
       };
       if(game.gamemode == 1){
+        game.controls.selection = "FreeCam";
         this_.setPosition([game.camera.position.x, game.camera.position.y, game.camera.position.z], rotation);
       };  
       if(this_.getPosition().position[1] <= -16){
@@ -363,11 +374,12 @@ game.entityTypes = {
         game.lastAttacker = {name: "void"};
       };
     }, 7000);
+    game.UI.damage();
     this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 2, 0));
     game.UI.sound("damage"+Math.round(Math.random()*2+1));
   },
   function (){
     game.UI.die();
     game.UI.sound("damage"+Math.round(Math.random()*2+1));
-  },5, 4],
+  },5, 4, 4],
 };

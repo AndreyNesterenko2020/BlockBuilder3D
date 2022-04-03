@@ -123,6 +123,7 @@ game.entity = class {
       game.entities[Object.keys(game.entities).length+1] = this_;
       this_.animations = object.morphTargetInfluences;
       this_.animationDict = object.morphTargetDictionary;
+      this_.jumpHeight = game.entityTypes[type][8]
       this_.playAnimation = function(name, speed, target){
         if(speed == undefined){
           speed = 1;
@@ -214,6 +215,20 @@ game.entity = class {
         };
         this_[0] = "deleted";
       };
+      this_.jump = function () {
+        var objects = Object.values(game.blocks);
+        var raycaster = new THREE.Raycaster();
+        for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
+          if(game.entities[loop] != this_ && game.entities[loop][0] != "deleted"){
+            objects.push(game.entities[loop].hitboxCombat);
+          };
+        };
+        raycaster.set(this_.hitboxCombat.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
+        var intersects = raycaster.intersectObjects(objects);
+        if(intersects[0] != undefined && intersects[0].distance-0.25 < game.entityTypes[this_.type][2][1]/2) {
+          this_.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0,this_.jumpHeight,0));
+        };
+      }
       this_.oncreate();
     });
   };

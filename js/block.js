@@ -27,9 +27,9 @@ game.block = class {
       if(game.materials[type]) {
         
       } else {
-        game.materials[this.type] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+".png")});
+        game.materials[this_.type] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+".png")});
       };
-      this_.block.material = game.materials[this.type];
+      this_.block.material = game.materials[this_.type];
     };
     test.onerror = function (){
       this_.block.material = game.materials.defaultMaterial;
@@ -73,6 +73,48 @@ game.block = class {
       };
     };
     this.delete = function (noaudio) {
+      var particles = []
+      function particleInit(){
+        for(let i = 0; i < 10; i++){
+          if(this_.block.material == game.defaultMaterial){
+            var material = new THREE.SpriteMaterial({
+              map: game.materials.defaultMaterial.map,
+              side: THREE.DoubleSide,
+            });
+          } else {
+            var material = new THREE.SpriteMaterial({
+              map: this_.block.material.map,
+            });
+          };
+          var particle = new THREE.Sprite(material);
+          particle.scale.set(0.25, 0.25, 0.25);
+          particle.position.set(this_.block.position.x+Math.random()/2-0.5, this_.block.position.y+Math.random()/2-0.5, this_.block.position.z+Math.random()/2-0.5);
+          particle.randX = (Math.random()/10-0.04)/2;
+          particle.randZ = (Math.random()/10-0.04)/2;
+          particle.fall = 0;
+          game.scene.add(particle);
+          particles.push(particle);
+        };
+      };
+      var time = 0;
+      function particleLoop(){
+        time++
+        if(time > 100){
+          for(var i = 0; i < particles.length; i++){
+            game.scene.remove(particles[i])
+          };
+          return;
+        }
+        for(var i = 0; i < particles.length; i++){
+          particles[i].fall += 0.001
+          particles[i].position.y += 0.025-particles[i].fall
+          particles[i].position.x += particles[i].randX
+          particles[i].position.z += particles[i].randZ
+        };
+        setTimeout(particleLoop, 10);
+      }
+      particleLoop();
+      particleInit();
       if(game.blockTypes[this.type]){
         this.onbreak();
       };
@@ -96,7 +138,7 @@ game.block = class {
 document.addEventListener("mousemove", event => {
   game.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
   game.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-  if(game.controls.selection == "FreeCam"){
+  if(game.controls.selection == "FreeCam" || game.controls.selection == "Player"){
     game.mouse.x = 0;
     game.mouse.y = 0;
   };

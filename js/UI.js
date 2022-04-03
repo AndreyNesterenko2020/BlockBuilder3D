@@ -1,7 +1,7 @@
 game.UI.commands = {
-  //3 PARAMETERS MAX
+  //5 PARAMETERS MAX
   help: function (a){
-    return "help [me] - get help<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [position] [?rotation] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
+    return "js [code] - run javascript code<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [position] [?rotation] [?name] [?noUseAI] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
   },
   kill: function (selector){
     var kill = [];
@@ -76,7 +76,7 @@ game.UI.commands = {
     };
     return "incorrect parameter.";
   },
-  spawn: function (type, position, rotation){
+  spawn: function (type, position, rotation, name, noUseAI){
     if(!game.entityTypes[type]){
       return "Unknown entity type."
     };
@@ -86,8 +86,11 @@ game.UI.commands = {
     if(typeof(eval(rotation)) != "object"){
       rotation = "[0, 0, 0]";
     };
-    new game.entity(type, eval(position), eval(rotation));
-    return "Spawned new "+type+" at position "+position+" at rotation "+rotation;
+    if(typeof(eval(noUseAI)) != "boolean"){
+      noUseAI = "false";
+    };
+    new game.entity(type, eval(position), eval(rotation), name, eval(noUseAI));
+    return "Spawned new "+type+" at position "+position+" at rotation "+rotation+" with name "+name+" with AI "+!eval(noUseAI);
   },
   setBlock: function (type, position) {
     if(typeof(eval(position)) != "object"){
@@ -164,6 +167,13 @@ game.UI.commands = {
     };
     return "incorrect parameter.";
   },
+  js: function (code){
+    try {
+      return eval(code);
+    } catch (error) {
+      return error;
+    }
+  },
 };
 game.UI.selection = "Stone";
 game.UI.respawn = function (){
@@ -213,7 +223,7 @@ game.UI.init = function (){
     game.UI.settings.style.backgroundSize = "100% 100%";
     game.UI.settings.style.width = "60%";
     game.UI.settings.style.height = "25%";
-    game.UI.settings.innerHTML += "<h1 style=margin-top:2%;margin-left:5%>Settings</h1><button style=margin-top:2%;margin-left:5% onclick='if(game.controls.selection == `FreeCam`){game.controls.selection = `Orbit`; this.innerHTML = `Change controls to FreeCam`; this.blur()} else {game.controls.selection = `FreeCam`; this.innerHTML = `Change controls to Orbit`; this.blur()}'>Change controls to Orbit</button> FOV: <input type=number onkeyup=game.FOV=this.value value="+game.FOV+"> Block Range: <input type=number onkeyup=game.range=this.value value="+game.range+"> <br> <button style=margin-top:2%;margin-left:5% onclick='if(game.debug == true){game.debug = false; this.innerHTML = `Enable Debug`; this.blur()} else {game.debug = true; this.innerHTML = `Disable Debug`; this.blur()}'>Enable Debug</button> <button onclick='if(game.gamemode == 1){game.gamemode = 0; this.innerHTML = `Set to gamemode 1`; this.blur()} else {game.gamemode = 1; this.innerHTML = `Set to gamemode 0`; this.blur()}'>Set to gamemode 1</button><br><button style=margin-top:2%;margin-left:5% onclick=game.UI.settings.style.display=`none`;>close</button>";
+    game.UI.settings.innerHTML += "<h1 style=margin-top:2%;margin-left:5%>Settings</h1><button style=margin-top:2%;margin-left:5% onclick='if(game.controls.selection == `FreeCam`){game.controls.selection = `Orbit`; this.innerHTML = `Change controls to FreeCam`; this.blur()} else {game.controls.selection = `FreeCam`; this.innerHTML = `Change controls to Orbit`; this.blur()}'>Change controls to Orbit</button> FOV: <input type=number onkeyup=game.FOV=this.value value="+game.FOV+"> Block Range: <input type=number onkeyup=game.range=this.value value="+game.range+"> <br> <button style=margin-top:2%;margin-left:5% onclick='if(game.debug == true){game.debug = false; this.innerHTML = `Enable Debug`; this.blur(); game.UI.consoleMessage(`Disabled debug`);} else {game.debug = true; this.innerHTML = `Disable Debug`; this.blur(); game.UI.consoleMessage(`Enabled debug`);}'>Enable Debug</button> <button onclick='if(game.gamemode == 1){game.gamemode = 0; this.innerHTML = `Set to gamemode 1`; this.blur()} else {game.gamemode = 1; this.innerHTML = `Set to gamemode 0`; this.blur()}'>Set to gamemode 1</button><br><button style=margin-top:2%;margin-left:5% onclick=game.UI.settings.style.display=`none`;>close</button>";
     game.UI.settings.style.display = "none";
     game.UI.settingsButton = document.createElement("button")
     game.UI.settingsButton.onclick = function(){game.UI.settings.style.display=`block`;};
@@ -249,6 +259,23 @@ game.UI.init = function (){
     game.UI.console.style.backgroundSize = "100% 100%";
     game.UI.console.innerHTML = "<div id='console_output' style='overflow-y: scroll; height: 75%; margin-left: 1%;'></div><input style=' margin-left: 1%; width: 97%; border: solid black 1px; font-size: 150%;' placeholder='/ to enter console' id='console_input'>";
     document.body.appendChild(game.UI.console);
+    game.UI.debug = document.createElement("div");
+    game.UI.debug.style.top = 0;
+    game.UI.debug.style.width = "35%";
+    game.UI.debug.style.height = "25%";
+    game.UI.debug.style.left = "65%";
+    game.UI.debug.style.top = "10%";
+    game.UI.debug.style.position = "fixed";
+    document.body.appendChild(game.UI.debug);
+    document.body.style.position = "fixed";
+    game.UI.lag = document.createElement("h1");
+    game.UI.lag.style.position = "absolute";
+    game.UI.lag.style.left = "30%";
+    game.UI.lag.style.top = "20%";
+    game.UI.lag.innerHTML = "Is the game running slow? Try chromebook friendly mode.";
+    game.UI.lag.style.transition = "opacity 2s";
+    document.body.appendChild(game.UI.lag);
+    game.UI.console = document.createElement("div");
 };
 game.UI.consoleMessage = function (message){
   document.getElementById("console_output").innerHTML += "<br>"+message;
@@ -285,23 +312,61 @@ game.UI.die = function () {
   game.controls.PointerLock.unlock();
   game.controls.selection="DeathScreen"
   deathScreen = document.createElement("div");
-  deathScreen.style.backgroundColor = "red";
+  deathScreen.style.backgroundColor = "rgba(255, 0, 0, 0.6)";
   deathScreen.style.position = "fixed";
-  deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br<br><br><button onclick=game.UI.respawn()><h1>respawn</h1></button>";
+  if(game.generation.respawn){
+    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br><br><br><button onclick=game.UI.respawn()><h1 style=font-family:BlockBuilder3D>respawn</h1></button>";
+  } else {
+    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br><h1>NO RESPAWNING</h1><br><br><br><button onclick=location.reload()><h1 style=font-family:BlockBuilder3D >leave game</h1></button>";
+  };
   deathScreen.style.width = "100%";
   deathScreen.style.height = "100%";
   deathScreen.style.top = 0;
-  deathScreen.style.opacity = 0.5;
   deathScreen.style.textAlign = "center";
+  deathScreen.style.opacity = 0;
+  deathScreen.style.transition = "opacity 1s";
   document.body.appendChild(deathScreen);
   game.UI.consoleMessage(game.player.name+" was Killed by "+game.lastAttacker.name);
+  setTimeout(function (){
+    deathScreen.style.opacity = 1;
+  },100);
 };
+game.UI.damage = function () {
+  if(game.UI.damageScreen) {
+    return;
+  };
+  if(game.player.health <= 0){
+    return
+  };
+  var damage = document.createElement("div");
+  game.UI.damageScreen = true;
+  damage.style.backgroundColor = "rgba(255, 0, 0, 0.6)";
+  damage.style.position = "fixed";
+  damage.style.width = "100%";
+  damage.style.height = "100%";
+  damage.style.top = 0;
+  damage.style.textAlign = "center";
+  damage.style.opacity = 0;
+  damage.style.transition = "opacity 0.5s";
+  document.body.appendChild(damage);
+  setTimeout(function (){
+    damage.style.opacity = 1;
+  },10);
+  setTimeout(function (){
+    damage.style.opacity = 0;
+  },500);
+  setTimeout(function (){
+    damage.style.opacity = 0;
+    damage.outerHTML = "";
+    game.UI.damageScreen = false;
+  },1000);
+}
 document.body.style.fontFamily = "BlockBuilder3D";
 document.body.addEventListener("keydown", function(event) {
     if(event.keyCode == 13){
       game.UI.consoleMessage(document.getElementById("console_input").value);
       try{
-        game.UI.consoleMessage(eval("game.UI.commands."+document.getElementById("console_input").value.split("/")[1].split(" ")[0]+"('"+document.getElementById("console_input").value.split(document.getElementById("console_input").value.split(" ")[0])[1].split(" ")[1].replace(";", "','").replace(";", "','")+"')"));
+        game.UI.consoleMessage(eval("game.UI.commands."+document.getElementById("console_input").value.split("/")[1].split(" ")[0]+"('"+document.getElementById("console_input").value.split(document.getElementById("console_input").value.split(" ")[0])[1].split(" ")[1].replace(";", "','").replace(";", "','").replace(";", "','").replace(";", "','")+"')"));
       } catch (error) {
         game.UI.consoleMessage("Unknown command. Use /help me for help.");
         if(game.debug){
@@ -319,6 +384,7 @@ document.body.addEventListener("keydown", function(event) {
       if(game.UI.inventory[event.key-1] == undefined){
         return;
       };
+      game.UI.sound("select"+Math.round(Math.random()*2+1));
       game.UI.selection = game.UI.inventory[event.key-1]
       for(loop = 0; loop <= document.getElementById(game.UI.inventory[event.key-1]).parentElement.getElementsByTagName("img").length-1; loop++){
         game.UI.toolbar.getElementsByTagName("img")[loop].style.opacity = 0.5;
@@ -341,4 +407,5 @@ document.body.addEventListener("wheel", function(event) {
     game.UI.toolbar.getElementsByTagName("img")[loop].style.opacity = 0.5;
   };
   document.getElementById(game.UI.selection).style.opacity = 2;
+  game.UI.sound("select"+Math.round(Math.random()*2+1));
 });
