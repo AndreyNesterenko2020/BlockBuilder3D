@@ -35,14 +35,14 @@
       <input id="6" style="position: fixed; top: 40%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'void';"><p style="position: fixed; top: 35.5%; left: 45%;">void generation</p></input>
       <input id="4" style="position: fixed; top: 55%; left: 42%;" type="checkbox" checked=true onclick="game.generation.trees = !game.generation.trees"><p style="position: fixed; top: 50.5%; left: 45%;">generate trees</p></input>
       <input id="5" style="position: fixed; top: 60%; left: 42%;" type="checkbox" checked=true onclick="game.generation.puddle = !game.generation.puddle"><p style="position: fixed; top: 55.5%; left: 45%;">generate mud puddle</p></input>
-      <input id="7" style="position: fixed; top: 45%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('6').checked = false; game.generation.chromebook = !game.generation.chromebook"><p style="position: fixed; top: 40.5%; left: 45%;">chromebook friendly mode (recommended if simple mode runs slow)</p></input>
+      <input id="7" style="position: fixed; top: 45%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('6').checked = false; game.generation.chromebook = !game.generation.chromebook"><p style="position: fixed; top: 40.5%; left: 45%;">chromebook friendly mode (recommended if single mode runs slow)</p></input>
       <input id="8" style="position: fixed; top: 65%; left: 42%;" type="checkbox" checked=true onclick="game.generation.respawn = !game.generation.respawn"><p style="position: fixed; top: 60.5%; left: 45%;">allow respawn</p></input>
       <button style="background-color: white; position: fixed; top: 70%; left: 48%;" type="checkbox" onclick="Ammo().then(game.init);this.outerHTML=''; document.getElementById('menu').innerHTML = '<br>BLOCK BUILDER 3D<br><br><br><br><br><br><br><br><br>generating world...';"><h1>PLAY</h1></button>
     </h1>
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.3.1",
+                version: "1.3.1_01",
                 materials: {},
                 blocks: {},
                 blockObjects: {},

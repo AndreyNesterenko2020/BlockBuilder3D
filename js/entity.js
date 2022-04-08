@@ -108,7 +108,7 @@ game.entity = class {
       let rbInfo = new Ammo.btRigidBodyConstructionInfo(10, motionState, colShape, localInertia);
       let body = new Ammo.btRigidBody(rbInfo);
       body.setAngularFactor(0, 0, 0);
-      body.setFriction(0.25);
+      body.setFriction(0);
       game.physics.physicsWorld.addRigidBody(body); 
       this_.hitboxPhysics = body;
       this_.hitboxCombat = new THREE.Mesh(game.geometry);
@@ -177,7 +177,7 @@ game.entity = class {
         this_.hitboxPhysics.setWorldTransform(transform);
       };
       this_.getPosition = function() {
-        return({position: [this_.hitboxCombat.position.x, this_.hitboxCombat.position.y, this_.hitboxCombat.position.z], rotation: game.quaternionEuler(this_.hitboxCombat.quaternion)});
+        return({position: [this_.hitboxCombat.position.x, this_.hitboxCombat.position.y, this_.hitboxCombat.position.z], rotation: game.quaternionEuler(this_.hitboxDirection.quaternion)});
       };
       this_.attack = function (){
         var objects = Object.values(game.blocks);

@@ -206,5 +206,5 @@ game.generation.generate = function () {
     new game.item("wood", game.player.inventory, 5);
     new game.item("mud", game.player.inventory, 5);
     new game.item("bricks", game.player.inventory, 5);
-  }, 500);
+  }, 1000);
 };

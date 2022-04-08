@@ -399,7 +399,7 @@ game.entityTypes = {
     this.inventory.delete();
     game.UI.die();
     game.UI.sound("damage"+Math.round(Math.random()*2+1));
-  },5, 4, 4, [0, 0, 0]],
+  },5, 4, 6, [0, 0, 0]],
   item: [5,1,[0.25,0.25,0.25], function(){
     var this_ = this;
     function walkLoop(){
