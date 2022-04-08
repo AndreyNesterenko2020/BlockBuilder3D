@@ -200,5 +200,11 @@ game.generation.generate = function () {
   setTimeout(function (){
     game.UI.consoleMessage("");
     game.UI.consoleMessage("Hello there, Player!");
-  }, 100);
+    new game.item("stone", game.player.inventory, 5);
+    new game.item("dirt", game.player.inventory, 5)
+    new game.item("plant", game.player.inventory, 5);
+    new game.item("wood", game.player.inventory, 5);
+    new game.item("mud", game.player.inventory, 5);
+    new game.item("bricks", game.player.inventory, 5);
+  }, 500);
 };

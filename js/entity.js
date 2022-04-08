@@ -70,6 +70,9 @@ game.entity = class {
     this.health = this.maxHealth;
     this.attackDamage = game.entityTypes[type][1];
     this.spawnPosition = pos;
+    this.readOnlyPosition = pos;
+    this.readOnlyRotation = game.eulerQuaternion(rot);
+    this.hitboxAngularFactor = game.entityTypes[type][9];
     if(noUseAI){
       if(oncreate) {
         this.oncreate = oncreate;
@@ -164,6 +167,9 @@ game.entity = class {
         if(typeof rot == "number"){
           rot = [0, rot, 0];
         };
+        this_.readOnlyPosition = pos;
+        this_.readOnlyRotation = game.eulerQuaternion(rot);
+        rot = [rot[0]*this_.hitboxAngularFactor[0], rot[1]*this_.hitboxAngularFactor[1], rot[2]*this_.hitboxAngularFactor[2]];
         let transform = new Ammo.btTransform();
         transform.setIdentity();
         transform.setOrigin(new Ammo.btVector3(pos[0], pos[1], pos[2]));
@@ -181,7 +187,7 @@ game.entity = class {
           };
         };
         var raycaster = new THREE.Raycaster();
-        raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxCombat.quaternion), 0, Infinity);
+        raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
         var intersects = raycaster.intersectObjects(objects);
         if(intersects[0] != undefined && intersects[0].distance <= this_.range) {
           if(intersects[0].object.entity) {
@@ -290,18 +296,28 @@ game.entityPhysics = function(){
         game.entities[i].hitboxCombat.updateMatrixWorld();
         if (motion && game.entities[i].physicsEnabled) {
             motion.getWorldTransform(game.physics.tmpTrans);
-            objThree.position.set(game.physics.tmpTrans.getOrigin().x(), game.physics.tmpTrans.getOrigin().y(), game.physics.tmpTrans.getOrigin().z());
+            objThree.position.set(game.entities[i].readOnlyPosition[0], game.entities[i].readOnlyPosition[1], game.entities[i].readOnlyPosition[2]);
             game.entities[i].hitboxCombat.position.set(game.physics.tmpTrans.getOrigin().x(), game.physics.tmpTrans.getOrigin().y(), game.physics.tmpTrans.getOrigin().z());
             game.entities[i].hitboxDirection.position.set(game.physics.tmpTrans.getOrigin().x(), game.physics.tmpTrans.getOrigin().y(), game.physics.tmpTrans.getOrigin().z());
-            objThree.quaternion.set(game.physics.tmpTrans.getRotation().x(), game.physics.tmpTrans.getRotation().y(), game.physics.tmpTrans.getRotation().z(), game.physics.tmpTrans.getRotation().w());
+            objThree.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]);
             game.entities[i].hitboxCombat.quaternion.set(game.physics.tmpTrans.getRotation().x(), game.physics.tmpTrans.getRotation().y(), game.physics.tmpTrans.getRotation().z(), game.physics.tmpTrans.getRotation().w());
-            game.entities[i].hitboxDirection.quaternion.set(game.physics.tmpTrans.getRotation().x(), game.physics.tmpTrans.getRotation().y(), game.physics.tmpTrans.getRotation().z(), game.physics.tmpTrans.getRotation().w());
-            var temporaryEuler = new THREE.Vector3((game.entities[i].movement[0] - game.entities[i].movement[1]) * game.entities[i].movementSpeed, 0, (game.entities[i].movement[2] - game.entities[i].movement[3]) * game.entities[i].movementSpeed).applyQuaternion(game.entities[i].hitboxCombat.quaternion);
+            game.entities[i].hitboxDirection.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]);
+            var temporaryEuler = new THREE.Vector3((game.entities[i].movement[0] - game.entities[i].movement[1]) * game.entities[i].movementSpeed, 0, (game.entities[i].movement[2] - game.entities[i].movement[3]) * game.entities[i].movementSpeed).applyQuaternion(game.entities[i].hitboxDirection.quaternion);
             if(game.entities[i].health != 0) {
               objAmmo.setLinearVelocity(new Ammo.btVector3(temporaryEuler.x, objAmmo.getLinearVelocity().y(), temporaryEuler.z));
             } else {
               objAmmo.setLinearVelocity(new Ammo.btVector3(0, objAmmo.getLinearVelocity().y(), 0));
             };
+            game.entities[i].readOnlyPosition = game.entities[i].getPosition().position;
+            game.entities[i].readOnlyRotation = game.eulerQuaternion(game.entities[i].getPosition().rotation);
+        } else {
+          objAmmo.setLinearVelocity(new Ammo.btVector3(0, 0, 0));
+          objThree.position.set(game.entities[i].readOnlyPosition[0], game.entities[i].readOnlyPosition[1], game.entities[i].readOnlyPosition[2]);
+          game.entities[i].hitboxCombat.position.set(game.entities[i].readOnlyPosition[0], game.entities[i].readOnlyPosition[1], game.entities[i].readOnlyPosition[2]);
+          game.entities[i].hitboxDirection.position.set(game.entities[i].readOnlyPosition[0], game.entities[i].readOnlyPosition[1], game.entities[i].readOnlyPosition[2]);
+          objThree.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]);
+          game.entities[i].hitboxCombat.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]);
+          game.entities[i].hitboxDirection.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]); 
         };
     };
 };

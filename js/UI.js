@@ -1,7 +1,7 @@
 game.UI.commands = {
   //5 PARAMETERS MAX
   help: function (a){
-    return "js [code] - run javascript code<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [position] [?rotation] [?name] [?noUseAI] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
+    return "js [code] - run javascript code<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [position] [?rotation] [?name] [?noUseAI] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>give [item] [amount] - give an item to the player<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>Item types: "+Object.keys(game.itemTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
   },
   kill: function (selector){
     var kill = [];
@@ -174,6 +174,17 @@ game.UI.commands = {
       return error;
     }
   },
+  give: function (item, amount){
+    if(isNaN(Number(amount))){
+      amount = "1";
+    };
+    if(game.itemTypes[item]) {
+      new game.item(item, game.player.inventory, Number(amount));
+      return "gave "+amount+" of "+item+" to the player.";
+    } else {
+      return "Invalid item.";
+    }
+  },
 };
 game.UI.selection = "Stone";
 game.UI.respawn = function (){
@@ -197,7 +208,6 @@ game.UI.respawn = function (){
     };
   };
 };
-game.UI.inventory = [];
 game.UI.init = function (){
     game.UI.toolbar = document.createElement("div");
     game.UI.toolbar.style.top = "80%";
@@ -208,12 +218,6 @@ game.UI.init = function (){
     game.UI.toolbar.style.width = "60%";
     game.UI.toolbar.style.height = "17%";
     document.body.appendChild(game.UI.toolbar);
-    game.UI.add("Stone");
-    game.UI.add("Dirt");
-    game.UI.add("Plant");
-    game.UI.add("Wood");
-    game.UI.add("Mud");
-    game.UI.add("Tree");
     game.controls.selection = "FreeCam"
     game.UI.settings = document.createElement("div");
     game.UI.settings.style.top = "20%";
@@ -253,7 +257,7 @@ game.UI.init = function (){
     game.UI.console = document.createElement("div");
     game.UI.console.style.top = 0;
     game.UI.console.style.width = "30%";
-    game.UI.console.style.height = "25%";
+    game.UI.console.style.height = "30%";
     game.UI.console.style.position = "fixed";
     game.UI.console.style.backgroundImage = "url('textures/hotbar.png')";
     game.UI.console.style.backgroundSize = "100% 100%";
@@ -276,22 +280,27 @@ game.UI.init = function (){
     game.UI.lag.style.transition = "opacity 2s";
     document.body.appendChild(game.UI.lag);
     game.UI.console = document.createElement("div");
+    game.UI.inventory = [game.UI.add(1),game.UI.add(2),game.UI.add(3),game.UI.add(4),game.UI.add(5),game.UI.add(6)];
 };
 game.UI.consoleMessage = function (message){
   document.getElementById("console_output").innerHTML += "<br>"+message;
   document.getElementById("console_output").scrollTop = document.getElementById("console_output").scrollHeight;
 };
 game.UI.add = function (type){
-    var item = document.createElement("img");
+    var item = document.createElement("div");
     item.setAttribute("draggable", "false");
     item.style.marginTop = "2%";
     item.style.marginLeft = "5%";
-    item.src = "textures/"+type+".png";
+    //item.src = "textures/"+type+".png";
     item.id = type;
+    item.style.textAlign = "right";
+    item.style.float = "left";
     item.onerror = function (){
         item.src = missing;
     };
+    item.innerHTML = "";
     item.style.height = "70%";
+    item.style.width = "10%";
     item.onclick = function (){
         for(loop = 0; loop <= item.parentElement.getElementsByTagName("img").length-1; loop++){
             game.UI.toolbar.getElementsByTagName("img")[loop].style.opacity = 0.5;
@@ -300,7 +309,7 @@ game.UI.add = function (type){
         game.UI.selection = item.blocktype;
     };
     game.UI.toolbar.appendChild(item);
-    game.UI.inventory.push(type)
+    return item;
 };
 game.UI.sound = function (audio) {
   var sound = document.createElement("Audio");
@@ -380,32 +389,65 @@ document.body.addEventListener("keydown", function(event) {
     if(event.key == "/"){
       document.getElementById("console_input").focus();
     };
-    if(isNaN(Number(event.key)) == false){
-      if(game.UI.inventory[event.key-1] == undefined){
+    if(event.key == "t"){
+      game.player.inventory.drop(game.player.inventory.selection);
+      game.player.playAnimation("handAction");
+      setTimeout(function(){game.player.playAnimation("handAction", 1, 0)}, 250);
+    };
+    if(isNaN(Number(event.key)) == false && Number(event.key) != 0){
+      if(event.key > game.player.inventory.maxSlots){
         return;
       };
       game.UI.sound("select"+Math.round(Math.random()*2+1));
-      game.UI.selection = game.UI.inventory[event.key-1]
-      for(loop = 0; loop <= document.getElementById(game.UI.inventory[event.key-1]).parentElement.getElementsByTagName("img").length-1; loop++){
-        game.UI.toolbar.getElementsByTagName("img")[loop].style.opacity = 0.5;
+      game.player.inventory.selection = event.key;
+      for(var loop = 0; loop <= Object.keys(game.player.inventory.slots).length-1; loop++){
+        game.UI.inventory[loop].style.opacity = 0.5;
+        game.UI.inventory[loop].style.border = "none";
       };
-      document.getElementById(game.UI.inventory[event.key-1]).style.opacity = 2;
+      try {
+        document.getElementById(game.player.inventory.selection).style.opacity = 2;
+        document.getElementById(game.player.inventory.selection).style.border = "solid black 5px";
+      } catch(e){
+        
+      };
     };
 });
 document.body.addEventListener("wheel", function(event) {
-  console.log(game.UI.inventory.indexOf(game.UI.selection)+event.deltaY/Math.abs(event.deltaY), game.UI.inventory.length);
-  if(game.UI.inventory.indexOf(game.UI.selection)+event.deltaY/Math.abs(event.deltaY) > game.UI.inventory.length-1){
-    game.UI.selection = game.UI.inventory[0];
-  } else {
-    if(game.UI.inventory.indexOf(game.UI.selection)+event.deltaY/Math.abs(event.deltaY) < 0){
-      game.UI.selection = game.UI.inventory[game.UI.inventory.length-1];
-    } else {
-      game.UI.selection = game.UI.inventory[game.UI.inventory.indexOf(game.UI.selection)+event.deltaY/Math.abs(event.deltaY)];
-    };
+  game.player.inventory.selection+=event.deltaY/Math.abs(event.deltaY);
+  if(game.player.inventory.selection < 1){
+    game.player.inventory.selection = game.player.inventory.maxSlots;
   };
-  for(loop = 0; loop <= document.getElementById(game.UI.selection).parentElement.getElementsByTagName("img").length-1; loop++){
-    game.UI.toolbar.getElementsByTagName("img")[loop].style.opacity = 0.5;
+  if(game.player.inventory.selection > game.player.inventory.maxSlots){
+    game.player.inventory.selection = 1;
   };
-  document.getElementById(game.UI.selection).style.opacity = 2;
+  for(var loop = 0; loop <= Object.keys(game.player.inventory.slots).length-1; loop++){
+    game.UI.inventory[loop].style.opacity = 0.5;
+    game.UI.inventory[loop].style.border = "none";
+  };
+  try {
+    document.getElementById(game.player.inventory.selection).style.opacity = 2;
+    document.getElementById(game.player.inventory.selection).style.border = "solid black 5px";
+  } catch(e){
+    
+  };
   game.UI.sound("select"+Math.round(Math.random()*2+1));
 });
+game.renderer.domElement.addEventListener("mousedown", () => {
+  if(game.controls.PointerLock.isLocked == false){
+    return;
+  };
+   var objects = Object.values(game.blocks)
+  for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
+    if(game.entities[loop] && game.entities[loop][0] != "deleted"){
+      objects.push(game.entities[loop].hitboxCombat);
+    };
+  };
+  var intersects = game.raycaster.intersectObjects(objects);
+  var playerPos = new THREE.Vector3(Math.round(game.player.getPosition().position[0]), Math.round(game.player.getPosition().position[1]), Math.round(game.player.getPosition().position[2]));
+  var raycastPos = new THREE.Vector3(intersects[0].object.position.x + intersects[0].face.normal.x, intersects[0].object.position.y + intersects[0].face.normal.y, intersects[0].object.position.z + intersects[0].face.normal.z)
+  if(event.button == 2){
+    game.player.inventory.slots[game.player.inventory.selection].rightuse(playerPos, raycastPos, intersects[0].object);
+  } else {
+    game.player.inventory.slots[game.player.inventory.selection].leftuse(playerPos, raycastPos, intersects[0].object);
+  };
+})

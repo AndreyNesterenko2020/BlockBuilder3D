@@ -19,10 +19,18 @@ game.block = class {
       return;
     };
     this.block = new THREE.Mesh(game.geometry);
+    this.object = this.block;
+    this.getPosition = function (){
+      return({position:[x-0.5,y,z], rotation:[0, 0, 90]})
+    };
     this.type = type.toLowerCase();
-    var test = new Image()
+    var test = new Image();
     test.src = "textures/"+type+".png"
     var this_ = this;
+    new game.inventory(this, 1);
+    if(game.itemTypes[this.type]){
+      new game.item(this.type, this.inventory);
+    };
     test.onload = function () {
       if(game.materials[type]) {
         
@@ -121,8 +129,9 @@ game.block = class {
       if(!noaudio) {
         game.UI.sound(this.type+Math.round(Math.random()*2+1));
       };
+      var b = this.block;
       this.block.position.y = -255;
-      setTimeout(function(){game.scene.remove(this_.block)}, 1000);
+      setTimeout(function(){game.scene.remove(b)}, 1000);
       game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
       for(var i in this){
         delete this_[i];
@@ -157,15 +166,16 @@ game.renderer.domElement.addEventListener("mousedown", () => {
   var intersects = game.raycaster.intersectObjects(objects);
   if(event.button == 2){
     if (intersects.length > 0 && intersects[0].distance <= game.range && !intersects[0].object.entity) {
-      var pos = new THREE.Vector3(Math.round(game.player.getPosition().position[0]), Math.round(game.player.getPosition().position[1]), Math.round(game.player.getPosition().position[2]));
-      if(pos.equals(new THREE.Vector3(intersects[0].object.position.x + intersects[0].face.normal.x, intersects[0].object.position.y + intersects[0].face.normal.y, intersects[0].object.position.z + intersects[0].face.normal.z))){
-        return;
-      };
-      new game.block(intersects[0].object.position.x + intersects[0].face.normal.x, intersects[0].object.position.y + intersects[0].face.normal.y, intersects[0].object.position.z + intersects[0].face.normal.z, game.UI.selection, true);
+      //var pos = new THREE.Vector3(Math.round(game.player.getPosition().position[0]), Math.round(game.player.getPosition().position[1]), Math.round(game.player.getPosition().position[2]));
+      //if(pos.equals(new THREE.Vector3(intersects[0].object.position.x + intersects[0].face.normal.x, intersects[0].object.position.y + intersects[0].face.normal.y, intersects[0].object.position.z + intersects[0].face.normal.z))){
+        //return;
+      //};
+      //new game.block(intersects[0].object.position.x + intersects[0].face.normal.x, intersects[0].object.position.y + intersects[0].face.normal.y, intersects[0].object.position.z + intersects[0].face.normal.z, game.UI.selection, true);
     };
   } else {
     if(event.button == 0){
       if (intersects.length > 0 && intersects[0].distance <= game.range && !intersects[0].object.entity) {
+        intersects[0].object.block.inventory.dropAll();
         intersects[0].object.block.delete();
       };
     };

@@ -1,5 +1,8 @@
+//maxHealth, attackDamage, hitboxscale, oncreate, ondamage, ondeath, movementSpeed, range, jumpHeight, hitboxAngularFactor
 game.entityTypes = {
   cow: [50,15,[2.3,1.5,1], function(){
+    new game.inventory(this, 1);
+    new game.item("meat", this.inventory);
     var this_ = this;
     function animLoop(){
       if(this_.health == 0 || this_.health == undefined){
@@ -61,11 +64,15 @@ game.entityTypes = {
       game.bullAnger = true;
       game.UI.sound("cow"+Math.round(Math.random()*2+1));
     }, function(){
+      this.inventory.dropAll();
+      this.inventory.delete();
       game.UI.sound("cow"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },2.5, 2, 3],
+    },2.5, 2, 3, [1, 1, 1]],
   bull: [50,25,[2.5,1.75,1.25], function(){
+    new game.inventory(this, 1);
+    new game.item("meat", this.inventory);
     var this_ = this;
     game.bullAnger = false;
     game.bullThrowOff = false;
@@ -186,11 +193,15 @@ game.entityTypes = {
       game.bullAnger = true;
       game.UI.sound("cow"+Math.round(Math.random()*2+1));
     }, function(){
+      this.inventory.dropAll();
+      this.inventory.delete();
       game.UI.sound("cow"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },3, 3, 3],
+    },3, 3, 3, [1, 1, 1]],
   pig: [30,10,[1.5,0.9,0.6], function(){
+    new game.inventory(this, 1);
+    new game.item("meat", this.inventory);
     var this_ = this;
     function animLoop(){
       if(this_.health == 0 || this_.health == undefined){
@@ -249,11 +260,14 @@ game.entityTypes = {
       game.bullAnger = true;
       game.UI.sound("pig"+Math.round(Math.random()*2+1));
     }, function(){
+      this.inventory.dropAll();
+      this.inventory.delete();
       game.UI.sound("pig"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },3, 2, 3],
-  player: [100,1,[1,1.9,1], function(){
+    },3, 2, 3, [1, 1, 1]],
+  player: [100,1,[0.9,1.95,0.9], function(){
+    new game.inventory(this, 6);
     var this_ = this;
     var sin = 0;
     var walk = game.UI.sound("walk");
@@ -343,6 +357,7 @@ game.entityTypes = {
       };
       if(game.gamemode == 0){
         game.controls.selection = "Player";
+        this_.physicsEnabled = true;
         game.camera.position.x = this_.getPosition().position[0];
         game.camera.position.y = this_.getPosition().position[1];
         game.camera.position.z = this_.getPosition().position[2];
@@ -350,6 +365,7 @@ game.entityTypes = {
       };
       if(game.gamemode == 1){
         game.controls.selection = "FreeCam";
+        this_.physicsEnabled = false;
         this_.setPosition([game.camera.position.x, game.camera.position.y, game.camera.position.z], rotation);
       };  
       if(this_.getPosition().position[1] <= -16){
@@ -379,7 +395,42 @@ game.entityTypes = {
     game.UI.sound("damage"+Math.round(Math.random()*2+1));
   },
   function (){
+    this.inventory.dropAll();
+    this.inventory.delete();
     game.UI.die();
     game.UI.sound("damage"+Math.round(Math.random()*2+1));
-  },5, 4, 4],
+  },5, 4, 4, [0, 0, 0]],
+  item: [5,1,[0.25,0.25,0.25], function(){
+    var this_ = this;
+    function walkLoop(){
+      if(this_.getPosition().position[1] <= -16){
+        this_.health = 0;
+      };
+      this_.setPosition(this_.getPosition().position, [0,this_.getPosition().rotation[1]+0.5,0]);
+      var closestEntity = undefined;
+      var closestDistance = Infinity;
+      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+        if(game.entities[i].type == "item" || game.entities[i].health == 0 || game.entities[i][0]){
+          continue;
+        };
+        if(closestDistance > game.entities[i].hitboxCombat.position.distanceTo(this_.hitboxCombat.position)){
+          closestDistance = game.entities[i].hitboxCombat.position.distanceTo(this_.hitboxCombat.position);
+          closestEntity = game.entities[i];
+        };
+      };
+      if(closestDistance <= 2){
+        if(closestEntity.inventory){
+          closestEntity.inventory.pickUp(this_.name, this_);
+        };
+      };
+      setTimeout(walkLoop, 10);
+    };
+    setTimeout(walkLoop, 1000);
+  },
+  function(){
+    
+  },
+  function(){
+    this.delete();
+  }, 5, 1, 3, [1, 1, 1]],
 };
