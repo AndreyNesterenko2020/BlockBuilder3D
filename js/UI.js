@@ -81,13 +81,16 @@ game.UI.commands = {
       return "Unknown entity type."
     };
     if(typeof(eval(position)) != "object"){
-      return "Invalid position.";
+      position = JSON.stringify(game.player.getPosition().position);
     };
     if(typeof(eval(rotation)) != "object"){
       rotation = "[0, 0, 0]";
     };
     if(typeof(eval(noUseAI)) != "boolean"){
       noUseAI = "false";
+    };
+    if(!name){
+      name = type;
     };
     new game.entity(type, eval(position), eval(rotation), name, eval(noUseAI));
     return "Spawned new "+type+" at position "+position+" at rotation "+rotation+" with name "+name+" with AI "+!eval(noUseAI);
@@ -189,7 +192,9 @@ game.UI.commands = {
 game.UI.selection = "Stone";
 game.UI.respawn = function (){
   game.controls.selection = "FreeCam";
-  game.player.delete();
+  if(!game.player[0]){
+    game.player.delete();
+  };
   game.player = new game.entity('player',[10,15,10]);
   deathScreen.outerHTML = '';
   for(var i = 0; i < game.getEntitiesByName("cow").length; i++){
@@ -369,7 +374,28 @@ game.UI.damage = function () {
     damage.outerHTML = "";
     game.UI.damageScreen = false;
   },1000);
-}
+};
+game.UI.itemPickedUp = function (amount, type) {
+  var itemPickedUp = document.createElement("div");
+  itemPickedUp.style.position = "fixed";
+  itemPickedUp.style.top = "60%";
+  itemPickedUp.style.left = "45%";
+  itemPickedUp.innerHTML = "+"+amount+" "+type;
+  itemPickedUp.style.opacity = 0;
+  itemPickedUp.style.transition = "all 0.5s";
+  document.body.appendChild(itemPickedUp);
+  setTimeout(function (){
+    itemPickedUp.style.opacity = 1;
+    itemPickedUp.style.top = "40%";
+  },10);
+  setTimeout(function (){
+    itemPickedUp.style.opacity = 0;
+  },500);
+  setTimeout(function (){
+    itemPickedUp.style.opacity = 0;
+    itemPickedUp.outerHTML = "";
+  },1000);
+};
 document.body.style.fontFamily = "BlockBuilder3D";
 document.body.addEventListener("keydown", function(event) {
     if(event.keyCode == 13){
@@ -443,8 +469,11 @@ game.renderer.domElement.addEventListener("mousedown", () => {
     };
   };
   var intersects = game.raycaster.intersectObjects(objects);
+  if(!intersects[0]){
+    intersects[0]={object:{position:{x:Infinity, y: Infinity, z: Infinity}}, face:{normal:{x:Infinity, y: Infinity, z: Infinity}}};
+  };
   var playerPos = new THREE.Vector3(Math.round(game.player.getPosition().position[0]), Math.round(game.player.getPosition().position[1]), Math.round(game.player.getPosition().position[2]));
-  var raycastPos = new THREE.Vector3(intersects[0].object.position.x + intersects[0].face.normal.x, intersects[0].object.position.y + intersects[0].face.normal.y, intersects[0].object.position.z + intersects[0].face.normal.z)
+  var raycastPos = new THREE.Vector3(intersects[0].object.position.x + intersects[0].face.normal.x, intersects[0].object.position.y + intersects[0].face.normal.y, intersects[0].object.position.z + intersects[0].face.normal.z);
   if(event.button == 2){
     game.player.inventory.slots[game.player.inventory.selection].rightuse(playerPos, raycastPos, intersects[0].object);
   } else {

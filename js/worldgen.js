@@ -87,6 +87,9 @@ game.generation.generate = function () {
   for(loop = 1; loop <= Math.round(Math.random()*3)+1; loop++){
     new game.entity("pig", [12,8,12]);
   };
+  if(Math.round(Math.random()*100)==0){
+    new game.entity("tony", [12,8,12]);
+  };
   if(game.generation.puddle){
     game.generation.puddle = [Math.floor(Math.random()*(size-2)), game.generation.top-1, Math.floor(Math.random()*(size-2))+1];
     if (game.getBlock(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2])){
@@ -200,11 +203,11 @@ game.generation.generate = function () {
   setTimeout(function (){
     game.UI.consoleMessage("");
     game.UI.consoleMessage("Hello there, Player!");
-    new game.item("stone", game.player.inventory, 5);
-    new game.item("dirt", game.player.inventory, 5)
-    new game.item("plant", game.player.inventory, 5);
-    new game.item("wood", game.player.inventory, 5);
-    new game.item("mud", game.player.inventory, 5);
-    new game.item("bricks", game.player.inventory, 5);
+    new game.item("stone", game.player.inventory, 20);
+    new game.item("dirt", game.player.inventory, 20);
+    new game.item("plant", game.player.inventory, 20);
+    new game.item("wood", game.player.inventory, 20);
+    new game.item("mud", game.player.inventory, 20);
+    new game.item("bricks", game.player.inventory, 20);
   }, 1000);
 };

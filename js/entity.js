@@ -319,5 +319,11 @@ game.entityPhysics = function(){
           game.entities[i].hitboxCombat.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]);
           game.entities[i].hitboxDirection.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]); 
         };
+        if(game.entities[i].getPosition().position[1] <= -16){
+          game.entities[i].health = 0;
+        };
+        if(game.entities[i].getPosition().position[1] <= -128){
+          game.entities[i].delete();
+        };
     };
 };

@@ -213,11 +213,7 @@ game.entityTypes = {
       raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
       if(intersects[0] != undefined && intersects[0].distance < 0.45){
-        raycaster.set(this_.object.position, new THREE.Vector3(0, -1, 0), 0, Infinity);
-        var intersects = raycaster.intersectObjects(objects);
-        if(intersects[0] != undefined && intersects[0].distance < 1.5) {
-          this_.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0,2.5,0));
-        };
+        this_.jump();
       };
       this_.playAnimation("walk", 2, 0);
       setTimeout(function() {
@@ -267,7 +263,7 @@ game.entityTypes = {
       this.playAnimation("death");
     },3, 2, 3, [1, 1, 1]],
   player: [100,1,[0.9,1.95,0.9], function(){
-    new game.inventory(this, 6);
+    new game.inventory(this, 6, function(item, amount){game.UI.itemPickedUp(item, amount)});
     var this_ = this;
     var sin = 0;
     var walk = game.UI.sound("walk");
@@ -367,9 +363,6 @@ game.entityTypes = {
         game.controls.selection = "FreeCam";
         this_.physicsEnabled = false;
         this_.setPosition([game.camera.position.x, game.camera.position.y, game.camera.position.z], rotation);
-      };  
-      if(this_.getPosition().position[1] <= -16){
-        this_.health = 0;
       };
       setTimeout(walkLoop, 1);
     };
@@ -402,11 +395,17 @@ game.entityTypes = {
   },5, 4, 6, [0, 0, 0]],
   item: [5,1,[0.25,0.25,0.25], function(){
     var this_ = this;
+    if(!this.itemAmount){
+      this.itemAmount = 1;
+    };
+    var allowPickup = false;
     function walkLoop(){
-      if(this_.getPosition().position[1] <= -16){
-        this_.health = 0;
+      if(this_.health == 0){
+        return;
+      }
+      if(allowPickup) {
+        this_.setPosition(this_.getPosition().position, [0,this_.getPosition().rotation[1]+0.5,0]);
       };
-      this_.setPosition(this_.getPosition().position, [0,this_.getPosition().rotation[1]+0.5,0]);
       var closestEntity = undefined;
       var closestDistance = Infinity;
       for(var i = 1; i <= Object.keys(game.entities).length; i++){
@@ -418,14 +417,31 @@ game.entityTypes = {
           closestEntity = game.entities[i];
         };
       };
-      if(closestDistance <= 2){
+      if(closestDistance <= 2 && allowPickup){
         if(closestEntity.inventory){
           closestEntity.inventory.pickUp(this_.name, this_);
         };
       };
+      var closestEntity = undefined;
+      var closestDistance = Infinity;
+      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+        if(game.entities[i].type != "item" || game.entities[i].name != this_.name || game.entities[i] == this_){
+          continue;
+        };
+        if(closestDistance > game.entities[i].hitboxCombat.position.distanceTo(this_.hitboxCombat.position)){
+          closestDistance = game.entities[i].hitboxCombat.position.distanceTo(this_.hitboxCombat.position);
+          closestEntity = game.entities[i];
+        };
+      };
+      if(closestDistance <= 1){
+        closestEntity.itemAmount += this_.itemAmount;
+        closestEntity.setPosition([(closestEntity.getPosition().position[0]+this_.getPosition().position[0])/2, (closestEntity.getPosition().position[1]+this_.getPosition().position[1])/2, (closestEntity.getPosition().position[2]+this_.getPosition().position[2])/2], closestEntity.getPosition().rotation);
+        this_.delete();
+      };
       setTimeout(walkLoop, 10);
     };
-    setTimeout(walkLoop, 1000);
+    setTimeout(walkLoop, 10);
+    setTimeout(function(){allowPickup=true}, 1000);
   },
   function(){
     
@@ -433,4 +449,17 @@ game.entityTypes = {
   function(){
     this.delete();
   }, 5, 1, 3, [1, 1, 1]],
+  tony: [50,15,[1, 1, 1], function(){
+    var this_ = this;
+     function walkLoop(){
+        if(this_.health == 0 || this_.health == undefined){
+          return
+        };
+        this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+        this_.movement[0] = 1;
+        setTimeout(walkLoop, Math.random()*5000);
+      };
+      setTimeout(walkLoop, 100);
+  }, function(){game.UI.sound("tony"+Math.floor(Math.random()*4+1))}, function(){game.player.inventory.dropAll(); game.controls.PointerLock.unlock(); new game.item("meat", game.player.inventory, 10); game.UI.sound("tony1"); this.delete(); game.generation.respawn = false; game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.AmbientLight.color.g=0;game.AmbientLight.color.b=0; function a(){game.AmbientLight.color.r+=0.5; game.UI.lock.style.opacity = "1"; game.UI.lock.innerHTML = "he is coming"; game.UI.commands.delete("item"); setTimeout(a,100)}; a();
+  }, 2, 1, 3, [1,1,1]],
 };

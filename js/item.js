@@ -8,6 +8,7 @@ game.item = class {
       amount = 1;
     };
     this.amount = amount;
+    this.inventory = inventory;
     var this_ = this;
     for(var i = 1; i < inventory.maxSlots+1; i++){
       if(inventory.slots[i] == null){
@@ -36,18 +37,25 @@ game.item = class {
         this.delete();
       };
     };
-    this.drop = function (){
+    this.drop = function (all){
       this.ondropped();
       var pos = new THREE.Vector3(0.5, 0, 0).applyQuaternion(inventory.object.object.quaternion).add(new THREE.Vector3(inventory.object.getPosition().position[0], inventory.object.getPosition().position[1], inventory.object.getPosition().position[2]));
       var entity = new game.entity("item", [pos.x, pos.y, pos.z], inventory.object.getPosition().rotation, type);
-      this.amount -= 1;
       entity.movement[0]=1;
       setTimeout(function() {
-        entity.movement[0]=0;
+        if(entity.movement){
+          entity.movement[0]=0;
+        };
       }, 1000);
       setTimeout(function (){
         entity.object.material = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type+".png")});
-      }, 50);
+      }, 200);
+      if(!all){
+        this.amount -= 1;
+      } else {
+        entity.itemAmount = this.amount;
+        this.delete(true);
+      };
       if(this.amount == 0){
         this.delete(true);
       };
@@ -64,7 +72,7 @@ game.item = class {
   };
 };
 game.inventory = class {
-  constructor(object, maxSlots) {
+  constructor(object, maxSlots, onpickup) {
     object.inventory = this;
     this.maxSlots = maxSlots;
     this.slots = {};
@@ -73,6 +81,11 @@ game.inventory = class {
     var this_ = this;
     for(var i = 1; i < this.maxSlots+1; i++){
       this.slots[i] = null;
+    };
+    if(!onpickup){
+      this.onpickup = function(){};
+    } else {
+      this.onpickup = onpickup;
     };
     this.pickUp = function (itemType, entity){
       var taken = 0;
@@ -84,7 +97,8 @@ game.inventory = class {
       if(taken == this.maxSlots){
         return;
       };
-      var item = new game.item(itemType, this, 1, true);
+      var item = new game.item(itemType, this, entity.itemAmount, true);
+      this.onpickup(entity.itemAmount, itemType);
       entity.delete();
       game.UI.sound("pickup"+(Math.floor(Math.random()*2)+1));
       if(item.onpickup) {
@@ -100,9 +114,9 @@ game.inventory = class {
       for(let i = 1; i < this.maxSlots+1; i++){
         if(this_.slots[i]){
           var amount = this_.slots[i].amount;
-          for(var a = 0; a < amount; a++){
-            this_.slots[i].drop();
-          };
+          //for(var a = 0; a < amount; a++){
+            this_.slots[i].drop(true);
+          //};
         };
       };
     };

@@ -29,10 +29,10 @@
     <body>
     <h1 id="menu" style="height: 100%; width: 100%; position: fixed; top: 0; margin-left: 0px; margin-top: 0px; text-align: center; background-image: url('textures/dirt.png');">
       <br>BLOCK BUILDER 3D
-      <input id="1" style="position: fixed; top: 25%; left: 42%;" type="checkbox" checked=true onclick="document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'simple';"><p style="position: fixed; top: 20.5%; left: 45%;">single layer generation (recommended)</input>
-      <input id="2" style="position: fixed; top: 30%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('3').checked = false; document.getElementById('6').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'medium';"><p style="position: fixed; top: 25.5%; left: 45%;">double layer generation</input>
-      <input id="3" style="position: fixed; top: 35%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('6').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'complex';"><p style="position: fixed; top: 30.5%; left: 45%;">triple layer generation</p></input>
-      <input id="6" style="position: fixed; top: 40%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'void';"><p style="position: fixed; top: 35.5%; left: 45%;">void generation</p></input>
+      <input id="1" style="position: fixed; top: 25%; left: 42%;" type="checkbox" checked=true onclick="document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'simple'; game.generation.chromebook=false"><p style="position: fixed; top: 20.5%; left: 45%;">single layer generation (recommended)</input>
+      <input id="2" style="position: fixed; top: 30%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('3').checked = false; document.getElementById('6').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'medium'; game.generation.chromebook=false;"><p style="position: fixed; top: 25.5%; left: 45%;">double layer generation</input>
+      <input id="3" style="position: fixed; top: 35%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('6').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'complex'; game.generation.chromebook=false;"><p style="position: fixed; top: 30.5%; left: 45%;">triple layer generation</p></input>
+      <input id="6" style="position: fixed; top: 40%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'void'; game.generation.chromebook=false;"><p style="position: fixed; top: 35.5%; left: 45%;">void generation</p></input>
       <input id="4" style="position: fixed; top: 55%; left: 42%;" type="checkbox" checked=true onclick="game.generation.trees = !game.generation.trees"><p style="position: fixed; top: 50.5%; left: 45%;">generate trees</p></input>
       <input id="5" style="position: fixed; top: 60%; left: 42%;" type="checkbox" checked=true onclick="game.generation.puddle = !game.generation.puddle"><p style="position: fixed; top: 55.5%; left: 45%;">generate mud puddle</p></input>
       <input id="7" style="position: fixed; top: 45%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('6').checked = false; game.generation.chromebook = !game.generation.chromebook"><p style="position: fixed; top: 40.5%; left: 45%;">chromebook friendly mode (recommended if single mode runs slow)</p></input>
@@ -42,7 +42,7 @@
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.3.1_01",
+                version: "1.3.2",
                 materials: {},
                 blocks: {},
                 blockObjects: {},
