@@ -1,4 +1,4 @@
-//maxHealth, attackDamage, hitboxscale, oncreate, ondamage, ondeath, movementSpeed, range, jumpHeight, hitboxAngularFactor
+//maxHealth, attackDamage, hitboxscale, oncreate, ondamage, ondeath, movementSpeed, range, jumpHeight, hitboxAngularFactor, attackable
 game.entityTypes = {
   cow: [50,15,[2.3,1.5,1], function(){
     new game.inventory(this, 1);
@@ -27,7 +27,7 @@ game.entityTypes = {
         };
         var closestEntity = undefined;
         var closestDistance = Infinity;
-        for(var i = 1; i <= Object.keys(game.entities).length; i++){
+        for(var i = 0; i < game.entities.length; i++){
             if(game.entities[i].type != "bull" || game.entities[i].health == 0){
                 continue;
             };
@@ -69,7 +69,8 @@ game.entityTypes = {
       game.UI.sound("cow"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },2.5, 2, 3, [1, 1, 1]],
+      setTimeout(this.delete, 2000);
+    },2.5, 2, 3, [1, 1, 1], true],
   bull: [50,25,[2.5,1.75,1.25], function(){
     new game.inventory(this, 1);
     new game.item("meat", this.inventory);
@@ -111,7 +112,7 @@ game.entityTypes = {
           };
           if(attack){
             var objects = [];
-            for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
+            for(var loop = 0; loop < game.entities.length; loop++){
               if(game.entities[loop] != this_ && game.entities[loop][0] != "deleted"){
                 objects.push(game.entities[loop].hitboxCombat);
               };
@@ -173,7 +174,6 @@ game.entityTypes = {
             setTimeout(walkLoop, 100);
           };
         };
-
       };
       function healLoop(){
         if(this_.health <= 0){
@@ -198,7 +198,8 @@ game.entityTypes = {
       game.UI.sound("cow"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },3, 3, 3, [1, 1, 1]],
+      setTimeout(this.delete, 2000);
+    },3, 3, 3, [1, 1, 1], true],
   pig: [30,10,[1.5,0.9,0.6], function(){
     new game.inventory(this, 1);
     new game.item("meat", this.inventory);
@@ -261,7 +262,8 @@ game.entityTypes = {
       game.UI.sound("pig"+Math.round(Math.random()*2+1));
       this.stopAnimations();
       this.playAnimation("death");
-    },3, 2, 3, [1, 1, 1]],
+      setTimeout(this.delete, 2000);
+    },3, 2, 3, [1, 1, 1], true],
   player: [100,1,[0.9,1.95,0.9], function(){
     new game.inventory(this, 6, function(item, amount){game.UI.itemPickedUp(item, amount)});
     var this_ = this;
@@ -274,6 +276,9 @@ game.entityTypes = {
       if(this_.health == 0 || this_[0] == "deleted" || game.controls.PointerLock.isLocked == false){
         return;
       };
+      if(game.attackCooldown){
+        return;
+      };
       this_.stopAnimations();
       this_.playAnimation("handAction");
       var result = this_.attack();
@@ -282,10 +287,11 @@ game.entityTypes = {
       };
       setTimeout(function(){this_.playAnimation("handAction", 1, 0)}, 250);
     });
-    document.body.addEventListener("keypress", function (event){
+    document.body.addEventListener("keydown", function (event){
       if(this_.health == 0 || this_[0] == "deleted"){
         return;
       };
+      if(document.activeElement == document.getElementById("console_input")) return;
       if(event.key == "w"){
         walk.muted = false;
         sin += 0.1;
@@ -311,7 +317,7 @@ game.entityTypes = {
         this_.movement[3] = 1;
       };
       if(event.key == " "){
-        sin += 1;
+        sin += 0.2;
         this_.animations[0] = Math.abs(Math.sin(sin));
         this_.jump();
       };
@@ -392,7 +398,7 @@ game.entityTypes = {
     this.inventory.delete();
     game.UI.die();
     game.UI.sound("damage"+Math.round(Math.random()*2+1));
-  },5, 4, 6, [0, 0, 0]],
+  },5, 4, 6, [0, 0, 0], true],
   item: [5,1,[0.25,0.25,0.25], function(){
     var this_ = this;
     if(!this.itemAmount){
@@ -408,7 +414,7 @@ game.entityTypes = {
       };
       var closestEntity = undefined;
       var closestDistance = Infinity;
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i].type == "item" || game.entities[i].health == 0 || game.entities[i][0]){
           continue;
         };
@@ -424,7 +430,7 @@ game.entityTypes = {
       };
       var closestEntity = undefined;
       var closestDistance = Infinity;
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i].type != "item" || game.entities[i].name != this_.name || game.entities[i] == this_){
           continue;
         };
@@ -448,8 +454,8 @@ game.entityTypes = {
   },
   function(){
     this.delete();
-  }, 5, 1, 3, [1, 1, 1]],
-  tony: [50,15,[1, 1, 1], function(){
+  }, 5, 1, 3, [1, 1, 1], false],
+  tony: [13,15,[1, 1, 1], function(){
     var this_ = this;
      function walkLoop(){
         if(this_.health == 0 || this_.health == undefined){
@@ -460,6 +466,6 @@ game.entityTypes = {
         setTimeout(walkLoop, Math.random()*5000);
       };
       setTimeout(walkLoop, 100);
-  }, function(){game.UI.sound("tony"+Math.floor(Math.random()*4+1))}, function(){game.player.inventory.dropAll(); game.controls.PointerLock.unlock(); new game.item("meat", game.player.inventory, 10); game.UI.sound("tony1"); this.delete(); game.generation.respawn = false; game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.UI.consoleMessage("what have you done"); game.AmbientLight.color.g=0;game.AmbientLight.color.b=0; function a(){game.AmbientLight.color.r+=0.5; game.UI.lock.style.opacity = "1"; game.UI.lock.innerHTML = "he is coming"; game.UI.commands.delete("item"); setTimeout(a,100)}; a();
-  }, 2, 1, 3, [1,1,1]],
+  }, function(){game.UI.sound("tony"+Math.floor(Math.random()*4+1));this.jump();}, function(){game.player.inventory.dropAll(); game.controls.PointerLock.unlock(); new game.item("meat", game.player.inventory, 10); game.UI.sound("tony1"); this.delete(); game.generation.respawn = false; for(var i=0;i<20;i++)game.UI.consoleMessage("what have you done"); game.AmbientLight.color.g=0;game.AmbientLight.color.b=0; function a(){game.AmbientLight.color.r+=0.5; game.UI.lock.style.opacity = "1"; game.UI.lock.innerHTML = "he is coming"; game.UI.commands.delete("item"); setTimeout(a,100)}; a();
+  }, 2, 1, 3, [1,1,1], true],
 };

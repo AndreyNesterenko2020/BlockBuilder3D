@@ -1,12 +1,12 @@
 game.UI.commands = {
   //5 PARAMETERS MAX
   help: function (a){
-    return "js [code] - run javascript code<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [position] [?rotation] [?name] [?noUseAI] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>give [item] [amount] - give an item to the player<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>Item types: "+Object.keys(game.itemTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
+    return "js [code] - run javascript code<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [?position] [?rotation] [?name] [?noUseAI] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>give [item] [?amount] - give an item to the player<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>Item types: "+Object.keys(game.itemTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
   },
   kill: function (selector){
     var kill = [];
     if(selector == "all"){
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i][0]){
           continue;
         };
@@ -19,7 +19,7 @@ game.UI.commands = {
       return "Killed "+kill;
     };
     if(selector == "notplayer"){
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i][0]){
           continue;
         };
@@ -36,7 +36,7 @@ game.UI.commands = {
     };
     if(selector == "random"){
       var entities = [];
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i][0]){
           continue;
         };
@@ -59,7 +59,7 @@ game.UI.commands = {
       return "Killed "+kill;
     };
     if(game.entityTypes[selector]){
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i][0]){
           continue;
         };
@@ -99,23 +99,30 @@ game.UI.commands = {
     if(typeof(eval(position)) != "object"){
       return "Invalid position.";
     };
-    if(game.getBlock(eval(position)[0], eval(position)[1], eval(position)[2])){
-      game.getBlock(position[0], position[1], position[2]).delete();
+    if(!game.blockTypes[type]){
+      return "Invalid block type";
     };
-    new game.block(eval(position)[0], eval(position)[1], eval(position)[2], type);
+    if(game.getBlock(eval(position)[0], eval(position)[1], eval(position)[2])){
+      game.getBlock(eval(position)[0], eval(position)[1], eval(position)[2]).delete();
+    };
+    var block = new game.block(eval(position)[0], eval(position)[1], eval(position)[2], type);
     return "Placed new block";
   },
   gamemode: function (type) {
     if(type != 0 && type != 1) {
       return "Invalid gamemode";
     };
+    if(type==0){
+      var tmp = new game.block(game.player.getPosition().position[0],game.player.getPosition().position[1]-1,game.player.getPosition().position[2],"world_barrier");
+    };
     game.gamemode = type;
+    if(tmp&&tmp.delete)setTimeout(function(){tmp.delete()},100);
     return "Set player's gamemode to "+type;
   },
   delete: function (selector){
     var kill = [];
     if(selector == "all"){
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i][0]){
           continue;
         };
@@ -125,7 +132,7 @@ game.UI.commands = {
       return "Deleted "+kill;
     };
     if(selector == "notplayer"){
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i][0]){
           continue;
         };
@@ -139,7 +146,7 @@ game.UI.commands = {
     };
     if(selector == "random"){
       var entities = [];
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i][0]){
           continue;
         };
@@ -156,7 +163,7 @@ game.UI.commands = {
       return "Deleted "+kill;
     };
     if(game.entityTypes[selector]){
-      for(var i = 1; i <= Object.keys(game.entities).length; i++){
+      for(var i = 0; i < game.entities.length; i++){
         if(game.entities[i][0]){
           continue;
         };
@@ -191,6 +198,7 @@ game.UI.commands = {
 };
 game.UI.selection = "Stone";
 game.UI.respawn = function (){
+  if(!game.generation.respawn)return "no cheating death allowed. sorry.";
   game.controls.selection = "FreeCam";
   if(!game.player[0]){
     game.player.delete();
@@ -232,7 +240,7 @@ game.UI.init = function (){
     game.UI.settings.style.backgroundSize = "100% 100%";
     game.UI.settings.style.width = "60%";
     game.UI.settings.style.height = "25%";
-    game.UI.settings.innerHTML += "<h1 style=margin-top:2%;margin-left:5%>Settings</h1><button style=margin-top:2%;margin-left:5% onclick='if(game.controls.selection == `FreeCam`){game.controls.selection = `Orbit`; this.innerHTML = `Change controls to FreeCam`; this.blur()} else {game.controls.selection = `FreeCam`; this.innerHTML = `Change controls to Orbit`; this.blur()}'>Change controls to Orbit</button> FOV: <input type=number onkeyup=game.FOV=this.value value="+game.FOV+"> Block Range: <input type=number onkeyup=game.range=this.value value="+game.range+"> <br> <button style=margin-top:2%;margin-left:5% onclick='if(game.debug == true){game.debug = false; this.innerHTML = `Enable Debug`; this.blur(); game.UI.consoleMessage(`Disabled debug`);} else {game.debug = true; this.innerHTML = `Disable Debug`; this.blur(); game.UI.consoleMessage(`Enabled debug`);}'>Enable Debug</button> <button onclick='if(game.gamemode == 1){game.gamemode = 0; this.innerHTML = `Set to gamemode 1`; this.blur()} else {game.gamemode = 1; this.innerHTML = `Set to gamemode 0`; this.blur()}'>Set to gamemode 1</button><br><button style=margin-top:2%;margin-left:5% onclick=game.UI.settings.style.display=`none`;>close</button>";
+    game.UI.settings.innerHTML += "<h1 style=margin-top:2%;margin-left:5%>Settings</h1><button style=margin-top:2%;margin-left:5% onclick='if(game.controls.selection == `FreeCam`){game.controls.selection = `Orbit`; this.innerHTML = `Change controls to FreeCam`; this.blur()} else {game.controls.selection = `FreeCam`; this.innerHTML = `Change controls to Orbit`; this.blur()}'>Change controls to Orbit</button> FOV: <input type=number onkeyup=game.FOV=this.value value="+game.FOV+"> Block Range: <input type=number onkeyup=game.range=this.value value="+game.range+"> <br> <button style=margin-top:2%;margin-left:5% onclick='if(game.debug == true){game.debug = false; this.innerHTML = `Enable Debug`; this.blur(); game.UI.consoleMessage(`Disabled debug`);} else {game.debug = true; this.innerHTML = `Disable Debug`; this.blur(); game.UI.consoleMessage(`Enabled debug`);}'>Enable Debug</button> <button onclick='if(game.gamemode == 1){game.gamemode = 0;var tmp = new game.block(game.player.getPosition().position[0],game.player.getPosition().position[1]-1,game.player.getPosition().position[2],`world_barrier`);if(tmp&&tmp.delete)setTimeout(function(){tmp.delete()},100);this.innerHTML = `Set to gamemode 1`; this.blur()} else {game.gamemode = 1; this.innerHTML = `Set to gamemode 0`; this.blur()}'>Set to gamemode 1</button> <button onclick='if(this.innerHTML == `particle quality: Medium`){game.maxBlockParticles = 10; this.innerHTML = `particle quality: High`} else if(this.innerHTML == `particle quality: High`){game.maxBlockParticles = 0; this.innerHTML = `particle quality: None`} else if(this.innerHTML == `particle quality: None`){game.maxBlockParticles = 2; this.innerHTML = `particle quality: Low`} else if(this.innerHTML == `particle quality: Low`){game.maxBlockParticles = 5; this.innerHTML = `particle quality: Medium`};'>particle quality: Medium</button><br><button style=margin-top:2%;margin-left:5% onclick=game.UI.settings.style.display=`none`;>close</button>";
     game.UI.settings.style.display = "none";
     game.UI.settingsButton = document.createElement("button")
     game.UI.settingsButton.onclick = function(){game.UI.settings.style.display=`block`;};
@@ -286,6 +294,14 @@ game.UI.init = function (){
     document.body.appendChild(game.UI.lag);
     game.UI.console = document.createElement("div");
     game.UI.inventory = [game.UI.add(1),game.UI.add(2),game.UI.add(3),game.UI.add(4),game.UI.add(5),game.UI.add(6)];
+    game.UI.swing = document.createElement("img");
+    game.UI.swing.src = "textures/swordswing.gif";
+    game.UI.swing.style.position = "fixed";
+    game.UI.swing.style.top = "20%";
+    game.UI.swing.style.pointerEvents = "none";
+    game.UI.swing.style.left = "20%";
+    game.UI.swing.style.width = "50%";
+    document.body.appendChild(game.UI.swing);
 };
 game.UI.consoleMessage = function (message){
   document.getElementById("console_output").innerHTML += "<br>"+message;
@@ -314,6 +330,7 @@ game.UI.add = function (type){
         game.UI.selection = item.blocktype;
     };
     game.UI.toolbar.appendChild(item);
+    if(type==1)item.style.border = "solid black 5px";
     return item;
 };
 game.UI.sound = function (audio) {
@@ -411,10 +428,13 @@ document.body.addEventListener("keydown", function(event) {
       };
       document.getElementById("console_input").value = "";
       document.getElementById("console_input").blur();
+      game.controls.PointerLock.lock();
     };
     if(event.key == "/"){
       document.getElementById("console_input").focus();
+      game.controls.PointerLock.unlock();
     };
+    if(document.activeElement == document.getElementById("console_input")) return;
     if(event.key == "t"){
       game.player.inventory.drop(game.player.inventory.selection);
       game.player.playAnimation("handAction");
@@ -475,8 +495,8 @@ game.renderer.domElement.addEventListener("mousedown", () => {
   var playerPos = new THREE.Vector3(Math.round(game.player.getPosition().position[0]), Math.round(game.player.getPosition().position[1]), Math.round(game.player.getPosition().position[2]));
   var raycastPos = new THREE.Vector3(intersects[0].object.position.x + intersects[0].face.normal.x, intersects[0].object.position.y + intersects[0].face.normal.y, intersects[0].object.position.z + intersects[0].face.normal.z);
   if(event.button == 2){
-    game.player.inventory.slots[game.player.inventory.selection].rightuse(playerPos, raycastPos, intersects[0].object);
+    game.player.inventory.slots[game.player.inventory.selection].rightuse(playerPos, raycastPos, intersects[0].object, game.player);
   } else {
-    game.player.inventory.slots[game.player.inventory.selection].leftuse(playerPos, raycastPos, intersects[0].object);
+    game.player.inventory.slots[game.player.inventory.selection].leftuse(playerPos, raycastPos, intersects[0].object, game.player);
   };
 })

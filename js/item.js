@@ -37,11 +37,12 @@ game.item = class {
         this.delete();
       };
     };
-    this.drop = function (all){
+    this.drop = function (all, nothrow){
       this.ondropped();
       var pos = new THREE.Vector3(0.5, 0, 0).applyQuaternion(inventory.object.object.quaternion).add(new THREE.Vector3(inventory.object.getPosition().position[0], inventory.object.getPosition().position[1], inventory.object.getPosition().position[2]));
-      var entity = new game.entity("item", [pos.x, pos.y, pos.z], inventory.object.getPosition().rotation, type);
-      entity.movement[0]=1;
+      var rot = inventory.object.getPosition().rotation;
+      var entity = new game.entity("item", [pos.x, pos.y, pos.z], rot, type);
+      if(!nothrow)entity.movement[0]=1;
       setTimeout(function() {
         if(entity.movement){
           entity.movement[0]=0;
@@ -110,12 +111,12 @@ game.inventory = class {
         this.slots[slot].drop();
       };
     };
-    this.dropAll = function(){
+    this.dropAll = function(nothrow){
       for(let i = 1; i < this.maxSlots+1; i++){
         if(this_.slots[i]){
           var amount = this_.slots[i].amount;
           //for(var a = 0; a < amount; a++){
-            this_.slots[i].drop(true);
+            this_.slots[i].drop(true, nothrow);
           //};
         };
       };

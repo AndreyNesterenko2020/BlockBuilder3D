@@ -1,7 +1,7 @@
-game.entities = {};
+game.entities = [];
 game.getEntitiesByName = function (name) {
   var result = [];
-  for(var i = 1; i < Object.keys(game.entities).length+1; i++){
+  for(var i = 0; i < game.entities.length; i++){
     if(game.entities[i][0] == "deleted"){
       continue;
     };
@@ -123,10 +123,11 @@ game.entity = class {
       this_.hitboxDirection.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0)]);
       this_.hitboxDirection.material.transparent = true;
       game.scene.add(this_.hitboxDirection);
-      game.entities[Object.keys(game.entities).length+1] = this_;
+      game.entities.push(this_);
       this_.animations = object.morphTargetInfluences;
       this_.animationDict = object.morphTargetDictionary;
-      this_.jumpHeight = game.entityTypes[type][8]
+      this_.jumpHeight = game.entityTypes[type][8];
+      this_.attackable = game.entityTypes[type][10];
       this_.playAnimation = function(name, speed, target){
         if(speed == undefined){
           speed = 1;
@@ -181,7 +182,7 @@ game.entity = class {
       };
       this_.attack = function (){
         var objects = Object.values(game.blocks);
-        for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
+        for(var loop = 0; loop < game.entities.length; loop++){
           if(game.entities[loop] != this_ && game.entities[loop][0] != "deleted"){
             objects.push(game.entities[loop].hitboxCombat);
           };
@@ -190,7 +191,7 @@ game.entity = class {
         raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
         var intersects = raycaster.intersectObjects(objects);
         if(intersects[0] != undefined && intersects[0].distance <= this_.range) {
-          if(intersects[0].object.entity) {
+          if(intersects[0].object.entity && intersects[0].object.entity.attackable) {
             intersects[0].object.entity.health -= this_.attackDamage;
             intersects[0].object.entity.ondamage(this_);
             return intersects[0].object.entity;
@@ -220,11 +221,12 @@ game.entity = class {
             delete this_[i];
         };
         this_[0] = "deleted";
+        setTimeout(function(){game.entities.splice(game.entities.indexOf(this_), 1)}, 10);
       };
       this_.jump = function () {
         var objects = Object.values(game.blocks);
         var raycaster = new THREE.Raycaster();
-        for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
+        for(var loop = 0; loop < game.entities.length; loop++){
           if(game.entities[loop] != this_ && game.entities[loop][0] != "deleted"){
             objects.push(game.entities[loop].hitboxCombat);
           };
@@ -242,8 +244,11 @@ game.entity = class {
 game.entityPhysics = function(){
     setTimeout(game.entityPhysics, 1);
     game.physics.physicsWorld.stepSimulation(game.clock.getDelta(), 10 );
-    for (let i = 1; i < Object.keys(game.entities).length + 1; i++) {
+    for (let i = 0; i < game.entities.length; i++) {
         if(game.entities[i][0] == "deleted"){
+          continue;
+        };
+        if(!game.entities[i]){
           continue;
         };
         game.entities[i].hitboxDirection.scale.x = game.entities[i].range;
@@ -302,7 +307,8 @@ game.entityPhysics = function(){
             objThree.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]);
             game.entities[i].hitboxCombat.quaternion.set(game.physics.tmpTrans.getRotation().x(), game.physics.tmpTrans.getRotation().y(), game.physics.tmpTrans.getRotation().z(), game.physics.tmpTrans.getRotation().w());
             game.entities[i].hitboxDirection.quaternion.set(game.entities[i].readOnlyRotation[0], game.entities[i].readOnlyRotation[1], game.entities[i].readOnlyRotation[2], game.entities[i].readOnlyRotation[3]);
-            var temporaryEuler = new THREE.Vector3((game.entities[i].movement[0] - game.entities[i].movement[1]) * game.entities[i].movementSpeed, 0, (game.entities[i].movement[2] - game.entities[i].movement[3]) * game.entities[i].movementSpeed).applyQuaternion(game.entities[i].hitboxDirection.quaternion);
+            var temporaryEuler0 = game.eulerQuaternion([game.quaternionEuler(game.entities[i].hitboxDirection.quaternion)[0], game.quaternionEuler(game.entities[i].hitboxDirection.quaternion)[1], 0]);
+            var temporaryEuler = new THREE.Vector3((game.entities[i].movement[0] - game.entities[i].movement[1]) * game.entities[i].movementSpeed, 0, (game.entities[i].movement[2] - game.entities[i].movement[3]) * game.entities[i].movementSpeed).applyQuaternion(new THREE.Quaternion(temporaryEuler0[0], temporaryEuler0[1], temporaryEuler0[2], temporaryEuler0[3]));
             if(game.entities[i].health != 0) {
               objAmmo.setLinearVelocity(new Ammo.btVector3(temporaryEuler.x, objAmmo.getLinearVelocity().y(), temporaryEuler.z));
             } else {
