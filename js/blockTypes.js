@@ -1,11 +1,15 @@
 //visible, collidable, oncreate, onbreak, breakable
 game.blockTypes = {
-  dirt: [true, true, function(){}, function(){}, true],
-  plant: [true, true, function(){}, function(){}, true],
-  stone: [true, true, function(){}, function(){}, true],
-  wood: [true, true, function(){}, function(){}, true],
-  mud: [true, false, function(){}, function(){}, true],
-  world_barrier: [false, true, function(){}, function(){}, false],
-  tree: [true, true, function(){var this_ = this; var pos = new THREE.Vector3(0, 0, 0).copy(this.block.position); setTimeout(function (){this_.delete(true); setTimeout(function() {game.generation.tree(pos.x, pos.y, pos.z)}, 100)}, 100);}, function (){}, true],
-  bricks: [true, true, function(){}, function(){}, function(){}, true],
+  dirt: [true, true, function(){}, function(){}, 0.7],
+  plant: [true, true, function(){}, function(){}, 1],
+  stone: [true, true, function(){}, function(){}, 3],
+  wood: [true, true, function(){}, function(){}, 1.5],
+  mud: [true, false, function(){}, function(){}, 0.3],
+  world_barrier: [false, true, function(){}, function(){}, 10],
+  tree: [true, false, function(){var this_ = this; var pos = new THREE.Vector3(0, 0, 0).copy(this.block.position); setTimeout(function (){this_.delete(true); setTimeout(function() {game.generation.tree(pos.x, pos.y, pos.z); game.UI.sound("plant1");}, 100)}, 5000);}, function (){}, 0.01],
+  bricks: [true, true, function(){}, function(){}, 2.5],
+  leaves: [true, true, function(){if(Math.random()*100 > 80){new game.item("tree", this.inventory)}}, function(){}, 0.5],
+  fat: [true, true, function(){}, function(){}, 0.3],
+  stonebricks: [true, true, function(){}, function(){}, 2.5],
+  planks: [true, true, function(){}, function(){}, 1.5],
 };

@@ -1,7 +1,8 @@
+game.UI.slots = [];
 game.UI.commands = {
   //5 PARAMETERS MAX
   help: function (a){
-    return "js [code] - run javascript code<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [?position] [?rotation] [?name] [?noUseAI] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>give [item] [?amount] - give an item to the player<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>Item types: "+Object.keys(game.itemTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
+    return "js [code] - run javascript code<br>kill [all|random|notplayer|me|entityType] - kill an entity<br>spawn [type] [?position] [?rotation] [?name] [?noUseAI] - spawn an entity. <br>setBlock [type] [position] - change a block. <br>gamemode [0|1] - change the player's gamemode <br>delete [all|random|notplayer|me|entityType] - delete an entity<br>give [item] [?amount] - give an item to the player<br>refresh [chunks] - refresh chunks.<br>Position and rotation format: [x, y, z]<br>Block types: "+Object.keys(game.blockTypes)+".<br>Entity types: "+Object.keys(game.entityTypes)+"<br>Item types: "+Object.keys(game.itemTypes)+"<br>ALL PARAMETERS ARE SEPERATED WITH SEMICOLONS!";
   },
   kill: function (selector){
     var kill = [];
@@ -182,7 +183,7 @@ game.UI.commands = {
       return eval(code);
     } catch (error) {
       return error;
-    }
+    };
   },
   give: function (item, amount){
     if(isNaN(Number(amount))){
@@ -195,15 +196,20 @@ game.UI.commands = {
       return "Invalid item.";
     }
   },
+  refresh: function (chunk) {
+    game.refreshChunks();
+    return "Refreshed all chunks.";
+  },
 };
 game.UI.selection = "Stone";
 game.UI.respawn = function (){
   if(!game.generation.respawn)return "no cheating death allowed. sorry.";
+  game.refreshChunks();
   game.controls.selection = "FreeCam";
   if(!game.player[0]){
     game.player.delete();
   };
-  game.player = new game.entity('player',[10,15,10]);
+  game.player = new game.entity('player',[5,1.5,5]);
   deathScreen.outerHTML = '';
   for(var i = 0; i < game.getEntitiesByName("cow").length; i++){
     if(game.getEntitiesByName("cow")[i].health != 0){
@@ -218,6 +224,11 @@ game.UI.respawn = function (){
   for(var i = 0; i < game.getEntitiesByName("pig").length; i++){
     if(game.getEntitiesByName("pig")[i].health != 0){
       game.getEntitiesByName("pig")[i].health = game.getEntitiesByName("pig")[i].maxHealth;
+    };
+  };
+  for(var i = 0; i < game.getEntitiesByName("chicken").length; i++){
+    if(game.getEntitiesByName("chicken")[i].health != 0){
+      game.getEntitiesByName("chicken")[i].health = game.getEntitiesByName("chicken")[i].maxHealth;
     };
   };
 };
@@ -240,7 +251,7 @@ game.UI.init = function (){
     game.UI.settings.style.backgroundSize = "100% 100%";
     game.UI.settings.style.width = "60%";
     game.UI.settings.style.height = "25%";
-    game.UI.settings.innerHTML += "<h1 style=margin-top:2%;margin-left:5%>Settings</h1><button style=margin-top:2%;margin-left:5% onclick='if(game.controls.selection == `FreeCam`){game.controls.selection = `Orbit`; this.innerHTML = `Change controls to FreeCam`; this.blur()} else {game.controls.selection = `FreeCam`; this.innerHTML = `Change controls to Orbit`; this.blur()}'>Change controls to Orbit</button> FOV: <input type=number onkeyup=game.FOV=this.value value="+game.FOV+"> Block Range: <input type=number onkeyup=game.range=this.value value="+game.range+"> <br> <button style=margin-top:2%;margin-left:5% onclick='if(game.debug == true){game.debug = false; this.innerHTML = `Enable Debug`; this.blur(); game.UI.consoleMessage(`Disabled debug`);} else {game.debug = true; this.innerHTML = `Disable Debug`; this.blur(); game.UI.consoleMessage(`Enabled debug`);}'>Enable Debug</button> <button onclick='if(game.gamemode == 1){game.gamemode = 0;var tmp = new game.block(game.player.getPosition().position[0],game.player.getPosition().position[1]-1,game.player.getPosition().position[2],`world_barrier`);if(tmp&&tmp.delete)setTimeout(function(){tmp.delete()},100);this.innerHTML = `Set to gamemode 1`; this.blur()} else {game.gamemode = 1; this.innerHTML = `Set to gamemode 0`; this.blur()}'>Set to gamemode 1</button> <button onclick='if(this.innerHTML == `particle quality: Medium`){game.maxBlockParticles = 10; this.innerHTML = `particle quality: High`} else if(this.innerHTML == `particle quality: High`){game.maxBlockParticles = 0; this.innerHTML = `particle quality: None`} else if(this.innerHTML == `particle quality: None`){game.maxBlockParticles = 2; this.innerHTML = `particle quality: Low`} else if(this.innerHTML == `particle quality: Low`){game.maxBlockParticles = 5; this.innerHTML = `particle quality: Medium`};'>particle quality: Medium</button><br><button style=margin-top:2%;margin-left:5% onclick=game.UI.settings.style.display=`none`;>close</button>";
+    game.UI.settings.innerHTML += "<h1 style=margin-top:2%;margin-left:5%>Settings</h1><button style='position: relative' style=margin-top:2%;margin-left:5% onclick='if(game.controls.selection == `FreeCam`){game.controls.selection = `Orbit`; this.innerHTML = `Change controls to FreeCam`; this.blur()} else {game.controls.selection = `FreeCam`; this.innerHTML = `Change controls to Orbit`; this.blur()}'>Change controls to Orbit</button> FOV: <input type=number onkeyup=game.FOV=this.value value="+game.FOV+"> Block Range: <input type=number onkeyup=game.range=this.value value="+game.range+"> <br> <button style='position: relative' style=margin-top:2%;margin-left:5% onclick='if(game.debug == true){game.debug = false; this.innerHTML = `Enable Debug`; this.blur(); game.UI.consoleMessage(`Disabled debug`);} else {game.debug = true; this.innerHTML = `Disable Debug`; this.blur(); game.UI.consoleMessage(`Enabled debug`);}'>Enable Debug</button> <button style='position: relative' onclick='if(game.gamemode == 1){game.gamemode = 0;var tmp = new game.block(game.player.getPosition().position[0],game.player.getPosition().position[1]-1,game.player.getPosition().position[2],`world_barrier`);if(tmp&&tmp.delete)setTimeout(function(){tmp.delete()},100);this.innerHTML = `Set to gamemode 1`; this.blur()} else {game.gamemode = 1; this.innerHTML = `Set to gamemode 0`; this.blur()}'>Set to gamemode 1</button> <button style='position: relative' onclick='if(this.innerHTML == `particle quality: Medium`){game.maxBlockParticles = 10; this.innerHTML = `particle quality: High`} else if(this.innerHTML == `particle quality: High`){game.maxBlockParticles = 0; this.innerHTML = `particle quality: None`} else if(this.innerHTML == `particle quality: None`){game.maxBlockParticles = 2; this.innerHTML = `particle quality: Low`} else if(this.innerHTML == `particle quality: Low`){game.maxBlockParticles = 5; this.innerHTML = `particle quality: Medium`};'>particle quality: Medium</button> <button style='position: relative' onclick='if(game.renderMode == 1){game.renderMode = 2; this.innerHTML = `Render distance: large`} else {game.renderMode = 1; this.innerHTML = `Render distance: small`}'>Render distance: Small</button> Fog distance: <input type=number onkeyup=game.fogDistance=this.value value="+game.fogDistance+"> <button style='position: relative' onclick=game.save(2)>download world</button><br><button style='position: relative' style=margin-top:2%;margin-left:5% onclick=game.UI.settings.style.display=`none`;>close</button>";
     game.UI.settings.style.display = "none";
     game.UI.settingsButton = document.createElement("button")
     game.UI.settingsButton.onclick = function(){game.UI.settings.style.display=`block`;};
@@ -272,9 +283,13 @@ game.UI.init = function (){
     game.UI.console.style.width = "30%";
     game.UI.console.style.height = "30%";
     game.UI.console.style.position = "fixed";
-    game.UI.console.style.backgroundImage = "url('textures/hotbar.png')";
-    game.UI.console.style.backgroundSize = "100% 100%";
-    game.UI.console.innerHTML = "<div id='console_output' style='overflow-y: scroll; height: 75%; margin-left: 1%;'></div><input style=' margin-left: 1%; width: 97%; border: solid black 1px; font-size: 150%;' placeholder='/ to enter console' id='console_input'>";
+    game.UI.console.style.pointerEvents = "none";
+    game.UI.console.style.border = "solid black 10px";
+    game.UI.console.style.backgroundColor = "white";
+    game.UI.console.style.opacity = 0;
+    game.UI.console.id = "console";
+    game.UI.console.style.transition = "opacity 1s";
+    game.UI.console.innerHTML = "<div id='console_output' style='overflow-y: scroll; height: 85%; margin-left: 1%;'></div><input style=' margin-left: 1%; width: 97%; border: solid black 1px; font-size: 150%;' placeholder='/ to enter console' id='console_input'>";
     document.body.appendChild(game.UI.console);
     game.UI.debug = document.createElement("div");
     game.UI.debug.style.top = 0;
@@ -289,7 +304,7 @@ game.UI.init = function (){
     game.UI.lag.style.position = "absolute";
     game.UI.lag.style.left = "30%";
     game.UI.lag.style.top = "20%";
-    game.UI.lag.innerHTML = "Is the game running slow? Try chromebook friendly mode.";
+    game.UI.lag.innerHTML = "Is the game running slow? Try turning down your render distance.";
     game.UI.lag.style.transition = "opacity 2s";
     document.body.appendChild(game.UI.lag);
     game.UI.console = document.createElement("div");
@@ -297,11 +312,31 @@ game.UI.init = function (){
     game.UI.swing = document.createElement("img");
     game.UI.swing.src = "textures/swordswing.gif";
     game.UI.swing.style.position = "fixed";
-    game.UI.swing.style.top = "20%";
+    game.UI.swing.style.top = "10%";
     game.UI.swing.style.pointerEvents = "none";
     game.UI.swing.style.left = "20%";
     game.UI.swing.style.width = "50%";
     document.body.appendChild(game.UI.swing);
+    game.UI.inventoryGUI = document.createElement("div");
+    game.UI.inventoryGUI.style.left = "16.65%";
+    game.UI.inventoryGUI.style.top = "5%";
+    game.UI.inventoryGUI.style.width = "66.6%";
+    game.UI.inventoryGUI.style.height = "70%";
+    game.UI.inventoryGUI.style.position = "fixed";
+    game.UI.inventoryGUI.style.border = "solid black 10px";
+    game.UI.inventoryGUI.style.backgroundColor = "white";
+    game.UI.inventoryGUI.style.textAlign = "center";
+    game.UI.inventoryGUI.innerHTML = "<h1>Inventory</h1><h2>Backpack</h2>";
+    game.UI.inventoryGUI.style.display = "none";
+    game.UI.inventoryGUI.open = false;
+    game.UI.inventoryGUI.id = "inventoryGUI";
+    document.body.appendChild(game.UI.inventoryGUI);
+    for(var i = 7; i < 19; i ++) game.UI.slot(i);
+    var h2 = document.createElement("h2");
+    h2.style.clear = "both";
+    game.UI.inventoryGUI.appendChild(h2);
+    h2.innerHTML = "Toolbar";
+    for(var i = 1; i < 7; i ++) game.UI.slot(i);
 };
 game.UI.consoleMessage = function (message){
   document.getElementById("console_output").innerHTML += "<br>"+message;
@@ -322,33 +357,29 @@ game.UI.add = function (type){
     item.innerHTML = "";
     item.style.height = "70%";
     item.style.width = "10%";
-    item.onclick = function (){
-        for(loop = 0; loop <= item.parentElement.getElementsByTagName("img").length-1; loop++){
-            game.UI.toolbar.getElementsByTagName("img")[loop].style.opacity = 0.5;
-        };
-        item.style.opacity = 2;
-        game.UI.selection = item.blocktype;
-    };
     game.UI.toolbar.appendChild(item);
     if(type==1)item.style.border = "solid black 5px";
     return item;
 };
-game.UI.sound = function (audio) {
+game.UI.sound = function (audio, volume) {
   var sound = document.createElement("Audio");
   sound.src = "sounds/"+audio+".mp3";
+  if(!volume) volume = 1;
+  sound.volume = volume;
   sound.play();
   return sound;
 };
 game.UI.die = function () {
+  game.save(1);
   game.controls.PointerLock.unlock();
   game.controls.selection="DeathScreen"
   deathScreen = document.createElement("div");
   deathScreen.style.backgroundColor = "rgba(255, 0, 0, 0.6)";
   deathScreen.style.position = "fixed";
   if(game.generation.respawn){
-    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br><br><br><button onclick=game.UI.respawn()><h1 style=font-family:BlockBuilder3D>respawn</h1></button>";
+    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br><br><br><button style='position: relative' onclick=game.UI.respawn()><h1 style=font-family:BlockBuilder3D>respawn</h1></button>";
   } else {
-    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br><h1>NO RESPAWNING</h1><br><br><br><button onclick=location.reload()><h1 style=font-family:BlockBuilder3D >leave game</h1></button>";
+    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br><h1>NO RESPAWNING</h1><br><br><br><button style='position: relative' onclick=location.reload()><h1 style=font-family:BlockBuilder3D >leave game</h1></button>";
   };
   deathScreen.style.width = "100%";
   deathScreen.style.height = "100%";
@@ -413,6 +444,99 @@ game.UI.itemPickedUp = function (amount, type) {
     itemPickedUp.outerHTML = "";
   },1000);
 };
+game.UI.save = function () {
+  var save = document.createElement("div");
+  save.style.position = "fixed";
+  save.style.top = "60%";
+  save.style.left = "46.5%";
+  save.innerHTML = "<h1>Game saved<h1>"
+  save.style.opacity = 0;
+  save.style.transition = "all 0.5s";
+  document.body.appendChild(save);
+  setTimeout(function (){
+    save.style.opacity = 1;
+  },10);
+  setTimeout(function (){
+    save.style.opacity = 0;
+  },1000);
+  setTimeout(function (){
+    save.outerHTML = "";
+  },2000);
+};
+game.UI.openInventory = function () {
+  game.UI.inventoryGUI.style.display = "block";
+  game.UI.inventoryGUI.open = true;
+  game.controls.PointerLock.unlock();
+  game.UI.toolbar.style.display = "none";
+};
+game.UI.closeInventory = function () {
+  game.UI.inventoryGUI.style.display = "none";
+  game.UI.inventoryGUI.open = false;
+  game.controls.PointerLock.lock();
+  game.UI.toolbar.style.display = "block";
+};
+game.UI.toggleInventory = function () {
+  if(game.UI.inventoryGUI.open){
+    game.UI.closeInventory();
+  } else {
+    game.UI.openInventory();
+  };
+};
+game.UI.first = undefined;
+game.UI.second = undefined;
+game.UI.slot = function (id) {
+  var slot = document.createElement("div");
+  slot.style.backgroundImage = "url("+white+")";
+  slot.className = "slot";
+  slot.style.border = "solid black 5px";
+  slot.style.backgroundSize = "100% 100%";
+  slot.style.textAlign = "right";
+  slot.style.float = "left";
+  slot.style.width = "14%";
+  slot.style.height = "22%";
+  slot.style.margin = "0.1%";
+  game.UI.inventoryGUI.appendChild(slot);
+  slot.id = "slot"+id;
+  slot.innerHTML = "";
+  slot.onclick = function () {
+    slot.style.border = "solid grey 5px";
+    if(game.UI.first){
+      game.UI.second = slot;
+      var first = game.UI.first.id.split("slot")[1];
+      var first_item = game.player.inventory.slots[game.UI.first.id.split("slot")[1]];
+      var second = game.UI.second.id.split("slot")[1];
+      var second_item = game.player.inventory.slots[game.UI.second.id.split("slot")[1]];
+      if(first_item && second_item) {
+        game.player.inventory.slots[game.UI.first.id.split("slot")[1]].slot = game.player.inventory.slots[game.UI.second.id.split("slot")[1]].slot;
+        game.player.inventory.slots[game.UI.second.id.split("slot")[1]].slot = first;
+      };
+      game.player.inventory.slots[first] = second_item;
+      game.player.inventory.slots[second] = first_item;
+      a = game.UI.first;
+      b = game.UI.second;
+      game.UI.first = undefined;
+      game.UI.second = undefined;
+      setTimeout(function (){
+        a.style.border = "solid black 5px";
+        b.style.border = "solid black 5px";
+      }, 300);
+    } else {
+      game.UI.first = slot;
+    };
+  };
+  game.UI.slots.push(slot);
+};
+game.UI.updateSlots = function () {
+  game.UI.slots.forEach(function (slot) {
+    try {
+      slot.style.backgroundImage = "url(textures/"+game.player.inventory.slots[slot.id.split("slot")[1]].type+".png)";
+      slot.innerHTML = "<h1>"+game.player.inventory.slots[slot.id.split("slot")[1]].amount+"</h1>";
+    } catch (error) {
+      slot.style.backgroundImage = "url("+white+")";
+      slot.innerHTML = "";
+    };
+  });
+};
 document.body.style.fontFamily = "BlockBuilder3D";
 document.body.addEventListener("keydown", function(event) {
     if(event.keyCode == 13){
@@ -426,27 +550,32 @@ document.body.addEventListener("keydown", function(event) {
           console.error(error);
         };
       };
+      setTimeout('document.getElementById("console").style.opacity = 0', 1000);
       document.getElementById("console_input").value = "";
       document.getElementById("console_input").blur();
       game.controls.PointerLock.lock();
     };
     if(event.key == "/"){
+      document.getElementById("console").style.opacity = 1;
       document.getElementById("console_input").focus();
       game.controls.PointerLock.unlock();
     };
     if(document.activeElement == document.getElementById("console_input")) return;
+    if(event.key == "e"){
+      game.UI.toggleInventory();
+    };
     if(event.key == "t"){
       game.player.inventory.drop(game.player.inventory.selection);
       game.player.playAnimation("handAction");
       setTimeout(function(){game.player.playAnimation("handAction", 1, 0)}, 250);
     };
     if(isNaN(Number(event.key)) == false && Number(event.key) != 0){
-      if(event.key > game.player.inventory.maxSlots){
+      if(event.key > 6){
         return;
       };
       game.UI.sound("select"+Math.round(Math.random()*2+1));
-      game.player.inventory.selection = event.key;
-      for(var loop = 0; loop <= Object.keys(game.player.inventory.slots).length-1; loop++){
+      game.player.inventory.selection = Number(event.key);
+      for(var loop = 0; loop <= 5; loop++){
         game.UI.inventory[loop].style.opacity = 0.5;
         game.UI.inventory[loop].style.border = "none";
       };
@@ -461,12 +590,12 @@ document.body.addEventListener("keydown", function(event) {
 document.body.addEventListener("wheel", function(event) {
   game.player.inventory.selection+=event.deltaY/Math.abs(event.deltaY);
   if(game.player.inventory.selection < 1){
-    game.player.inventory.selection = game.player.inventory.maxSlots;
+    game.player.inventory.selection = 6;
   };
-  if(game.player.inventory.selection > game.player.inventory.maxSlots){
+  if(game.player.inventory.selection > 6){
     game.player.inventory.selection = 1;
   };
-  for(var loop = 0; loop <= Object.keys(game.player.inventory.slots).length-1; loop++){
+  for(var loop = 0; loop <= 5; loop++){
     game.UI.inventory[loop].style.opacity = 0.5;
     game.UI.inventory[loop].style.border = "none";
   };
@@ -480,9 +609,11 @@ document.body.addEventListener("wheel", function(event) {
 });
 game.renderer.domElement.addEventListener("mousedown", () => {
   if(game.controls.PointerLock.isLocked == false){
+    document.getElementById("console").style.opacity = 0;
+    document.getElementById("console_input").value = "";
     return;
   };
-   var objects = Object.values(game.blocks)
+  var objects = Object.values(game.blocks);
   for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
     if(game.entities[loop] && game.entities[loop][0] != "deleted"){
       objects.push(game.entities[loop].hitboxCombat);

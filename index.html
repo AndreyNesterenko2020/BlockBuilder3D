@@ -24,29 +24,45 @@
             font-family: BlockBuilder3D;
             src: url("font/BlockBuilder3D.ttf");
           }
+          button {
+            font-family: blockbuilder3D;
+            background-color: white;
+            position: fixed;
+          }
+          .worldSelect {
+            overflow-y: scroll;
+            width: 70%;
+            height: 40%;
+            left: 15%;
+            top: 25%;
+            position: fixed;
+            background-image: linear-gradient( rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1) );
+          }
+          button:hover {
+            filter: brightness(50%);
+          }
+          .slot:hover {
+            filter: brightness(50%);
+          }
         </style>
     </head>
-    <body>
+    <body onbeforeunload="return game.save(1)">
     <h1 id="menu" style="height: 100%; width: 100%; position: fixed; top: 0; margin-left: 0px; margin-top: 0px; text-align: center; background-image: url('textures/dirt.png');">
       <br>BLOCK BUILDER 3D
-      <input id="1" style="position: fixed; top: 25%; left: 42%;" type="checkbox" onclick="document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'simple'; game.generation.chromebook=false"><p style="position: fixed; top: 20.5%; left: 45%;">single layer generation (recommended)</input>
-      <input id="2" style="position: fixed; top: 30%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('3').checked = false; document.getElementById('6').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'medium'; game.generation.chromebook=false;"><p style="position: fixed; top: 25.5%; left: 45%;">double layer generation</input>
-      <input id="3" style="position: fixed; top: 35%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('6').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'complex'; game.generation.chromebook=false;"><p style="position: fixed; top: 30.5%; left: 45%;">triple layer generation</p></input>
-      <input id="6" style="position: fixed; top: 40%; left: 42%;" type="checkbox" onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('7').checked = false; game.generation.mode = 'void'; game.generation.chromebook=false;"><p style="position: fixed; top: 35.5%; left: 45%;">void generation</p></input>
-      <input id="4" style="position: fixed; top: 55%; left: 42%;" type="checkbox" checked=true onclick="game.generation.trees = !game.generation.trees"><p style="position: fixed; top: 50.5%; left: 45%;">generate trees</p></input>
-      <input id="5" style="position: fixed; top: 60%; left: 42%;" type="checkbox" checked=true onclick="game.generation.puddle = !game.generation.puddle"><p style="position: fixed; top: 55.5%; left: 45%;">generate mud puddle</p></input>
-      <input id="7" style="position: fixed; top: 20%; left: 42%;" type="checkbox" checked=true onclick="document.getElementById('1').checked = false; document.getElementById('2').checked = false; document.getElementById('3').checked = false; document.getElementById('6').checked = false; game.generation.chromebook = !game.generation.chromebook"><p style="position: fixed; top: 15.5%; left: 45%;">chromebook friendly mode (recommended most)</p></input>
-      <input id="8" style="position: fixed; top: 65%; left: 42%;" type="checkbox" checked=true onclick="game.generation.respawn = !game.generation.respawn"><p style="position: fixed; top: 60.5%; left: 45%;">allow respawn</p></input>
-      <input id="9" style="position: fixed; top: 50%; left: 42%;" type="checkbox" onclick="game.generation.sword = !game.generation.sword"><p style="position: fixed; top: 45.5%; left: 45%;">start with sword</p></input>
-      <button style="background-color: white; position: fixed; top: 70%; left: 48%;" type="checkbox" onclick="Ammo().then(game.init);this.outerHTML=''; document.getElementById('menu').innerHTML = '<br>BLOCK BUILDER 3D<br><br><br><br><br><br><br><br><br>generating world...';"><h1>PLAY</h1></button>
+      <button style="top: 40%; left: 33.3%; width: 33.3%" onclick="b = 'Name of your world:'; u = 'upload'; document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>World Select<br><button style='top: 70%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='var result = prompt(b); if(!result)return; game.world = result; game.init();'>create new world</button><button type='file' style='top: 80%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(u).click()'>Upload World</button>`; document.getElementsByClassName('worldSelect')[0].style.display = 'block'; Object.keys(localStorage).forEach(function (world){try{var world0 = document.createElement('button'); world0.style='width: 95%; text-align: center; border: solid black 4px; position: relative'; world0.innerHTML = '<h1>'+world+'<h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world0); world0.onclick=function(){game.init(localStorage[world]);}; var world1 = document.createElement('button'); world1.style='width: 5%; text-align: center; border: solid black 4px; position: relative'; world1.innerHTML = '<h1><img src=textures/trash.png></img></h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world1); world1.onclick=function(){localStorage.removeItem(world); location.reload();}}catch(e){console.log(e)}})"><h1>Play</h1></button>
+      <button style="top: 50%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>How to play:<br><br>WASD - Move<br>Left Mouse Button - attack/break<br>Right Mouse Button - attack/build<br>E - open inventory<br>T - throw item<br>Scroll/Number Keys - select item from toolbar<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>How to play</h1></button>
+      <button style="top: 60%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>Credits:<br><br>ExplodIng_Andrey - creator, modeler, and programmer<br>Asztro - Helping artist<br>SyrupHunter270 - Sound effects<br>Tonytheboi - Sound effects<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>Credits</h1></button>
     </h1>
+    <div class="worldSelect" style=display:none><h2 style="position: fixed">Looks like there are no worlds here... go ahead, make one right now!</h2></div>
+    <input id="upload" type="file" accept=".world" style="display: none;" onclick="this.addEventListener('change', function (event){var reader = new FileReader(); reader.readAsText(event.target.files[0]); reader.onload=function(event){game.init(event.target.result);}})">
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.3.3",
+                version: "1.4.0_alpha1",
                 materials: {},
                 blocks: {},
                 blockObjects: {},
+                chunks: [],
                 UI: {},
                 generation: {mode: "simple", trees: true, puddle: true, chromebook: true, respawn: true, sword: false},
                 controls: {selection: null},
@@ -54,6 +70,9 @@
                 range: 4,
                 physics: {},
                 debug: false,
+                fogDistance: 6,
+                renderMode: 1,
+                world: null,
             };
             game.scene = new THREE.Scene();
             game.textureLoader = new THREE.TextureLoader();
@@ -78,6 +97,7 @@
             game.AmbientLight = new THREE.AmbientLight(0x404040);
             game.scene.add(game.AmbientLight);
             game.clock = new THREE.Clock();
+            game.scene.fog = new THREE.Fog();
             game.gamemode = 0;
             game.renderer.domElement.onclick = function (){
               if (game.controls.selection == "FreeCam" || game.controls.selection == "Player") {
@@ -87,10 +107,75 @@
             game.render = function (){
                 requestAnimationFrame(game.render);
                 game.renderer.render(game.scene, game.camera);
+                game.scene.fog.far = game.fogDistance;
                 game.camera.fov = game.FOV;
                 game.camera.updateProjectionMatrix();
                 game.controls.FirstPerson.update(game.clock.getDelta());
                 if(game.player) {
+                  if(game.player.getPosition) {
+                    if(game.player.chunk) {
+                      game.player.chunk.load();
+                      if(game.renderMode == 2){
+                        try {
+                          game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z].load();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z].load();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x][game.player.chunk.z-8].load();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x][game.player.chunk.z+8].load();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x-16][game.player.chunk.z].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x+16][game.player.chunk.z].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x][game.player.chunk.z-16].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x][game.player.chunk.z+16].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z+8].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z-8].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z-8].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z+8].unload();
+                        } catch (e){};
+                      } else {
+                        try {
+                          game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x][game.player.chunk.z-8].unload();
+                        } catch (e){};
+                        try {
+                          game.chunkGrid[game.player.chunk.x][game.player.chunk.z+8].unload();
+                        } catch (e){};
+                      };
+                    };
+                    //will return empty object if chunk exists
+                    new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8, Math.floor(game.player.getPosition().position[2]/8)*8);
+                    if(game.renderMode == 2){
+                      new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8+8, Math.floor(game.player.getPosition().position[2]/8)*8);
+                      new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8-8, Math.floor(game.player.getPosition().position[2]/8)*8);
+                      new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8, Math.floor(game.player.getPosition().position[2]/8)*8+8);
+                      new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8, Math.floor(game.player.getPosition().position[2]/8)*8-8);
+                    };
+                  };
                   if(game.FPS < 30){
                     game.UI.lag.style.opacity = 1;
                   } else {
@@ -170,7 +255,7 @@
                       } else {
                         selection = game.player.inventory.slots[game.player.inventory.selection].type;
                       };
-                      game.UI.debug.innerHTML = "BlockBuilder3D version: "+game.version+"<br>THREE js version: "+THREE.REVISION+"<br><br>FPS: "+game.FPS+"<br><br>Nearest Entity: "+closestEntity.name+"<br>Distance: "+closestDistance+"<br><br>Player position: "+game.player.getPosition().position+"<br><br>Facing block: "+block+"<br>Selected item: "+selection+"<br><br>Gamemode: "+game.gamemode+"<br><br>Bull angry: "+game.bullAnger+"<br><br>Generation Settings:<br>Mode: "+game.generation.mode+"<br>Size: "+game.generation.size+"<br>Allow respawn: "+game.generation.respawn+"<br>Chromebook mode: "+game.generation.chromebook+"<br>Mud puddle: "+game.generation.puddle+"<br>Generate trees: "+game.generation.trees;
+                      game.UI.debug.innerHTML = "BlockBuilder3D version: "+game.version+"<br>THREE js version: "+THREE.REVISION+"<br><br>FPS: "+game.FPS+"<br><br>Nearest Entity: "+closestEntity.name+"<br>Distance: "+closestDistance+"<br><br>Player position: "+game.player.getPosition().position+"<br>Chunk: x: "+game.player.chunk.x+" z: "+game.player.chunk.z+"<br><br>Facing block: "+block+"<br>Selected item: "+selection+"<br><br>Gamemode: "+game.gamemode+"<br><br>Bull angry: "+!!game.bullAnger+"<br><br>Generation Settings:<br>Mode: "+game.generation.mode+"<br>Size: "+game.generation.size+"<br>Allow respawn: "+game.generation.respawn+"<br>Chromebook mode: "+game.generation.chromebook+"<br>Mud puddle: "+game.generation.puddle+"<br>Generate trees: "+game.generation.trees+"<br>World: "+game.world;
                       game.UI.debug.style.display = "block";
                     } catch (error) {
                       undefined;
@@ -179,9 +264,12 @@
                     game.UI.debug.style.display = "none";
                   }; 
                 };
+                if(game.UI.inventoryGUI && game.UI.inventoryGUI.open){
+                  game.UI.updateSlots();
+                };
                 scrollTo(0,0);
             };
-            game.init = function() {
+            game.init = function(world) {
                 document.title = document.title + " " + game.version;
                 game.render();
                 game.UI.init();
@@ -193,9 +281,40 @@
                 game.physics.physicsWorld = new Ammo.btDiscreteDynamicsWorld(game.physics.dispatcher, game.physics.overlappingPairCache, game.physics.solver, game.physics.collisionConfiguration);
                 game.physics.physicsWorld.setGravity(new Ammo.btVector3(0, -9.81, 0));
                 game.physics.tmpTrans = new Ammo.btTransform();
-                game.generation.generate();
+                //game.generation.generate();
                 game.entityPhysics();
                 game.startFPS();
+                if(world) {
+                  game.load(world);
+                  setTimeout(function (){
+                    game.UI.consoleMessage("");
+                    game.UI.consoleMessage("Welcome back, Player!");
+                  }, 1000);
+                } else {
+                  game.player = new game.entity("player", [5,1.5,5]);
+                  setTimeout(function (){
+                    game.UI.consoleMessage("");
+                    game.UI.consoleMessage("Hello there, Player!");
+                    if(!game.generation.sword){
+                      new game.item("stone", game.player.inventory, 20);
+                      new game.item("dirt", game.player.inventory, 20);
+                      new game.item("plant", game.player.inventory, 20);
+                      new game.item("wood", game.player.inventory, 20);
+                      new game.item("mud", game.player.inventory, 20);
+                      new game.item("bricks", game.player.inventory, 20);
+                    } else {
+                      new game.item("sword", game.player.inventory, 1);
+                      new game.item("stone", game.player.inventory, 20);
+                      new game.item("plant", game.player.inventory, 20);
+                      new game.item("wood", game.player.inventory, 20);
+                      new game.item("mud", game.player.inventory, 20);
+                      new game.item("bricks", game.player.inventory, 20);
+                    };
+                  }, 1000);
+                };
+                document.getElementById("menu").style.display = "none";
+                document.getElementsByClassName('worldSelect')[0].style.display = "none";
+                setTimeout(game.saveLoop, 5000);
             };
             game.FPS = 0;
             game.startFPS = function() {
@@ -207,12 +326,61 @@
                 requestAnimationFrame(loop);
               });
             };
+            game.save = function (mode) {
+              if(!game.world) return;
+              var WorldData = JSON.stringify({name: game.world, respawn: game.generation.respawn, mode: game.generation.mode, trees: game.generation.trees, puddle: game.generation.puddle});
+              var BlockSave = game.blockSave();
+              var EntitySave = game.entitySave();
+              var result = "BLOCKBUILDER3D WORLD FILE GENERATED BY VERSION: "+game.version+"\nWorldData:\n"+WorldData+"\nBlockSave:\n"+BlockSave+"\nEntitySave:\n"+EntitySave;
+              if(mode == 1){
+                localStorage[game.world] = result;
+              };
+              if(mode == 2){
+                game.download(game.world+".WORLD", result);
+              };
+              console.log("world "+game.world+" has been saved");
+              return result;
+            };
+            game.load = function (data) {
+              var tmp1 = JSON.parse(data.split("WorldData:\n")[1].split("\nBlockSave:")[0]);
+              var tmp2 = data.split("BlockSave:\n")[1].split("\nEntitySave:")[0];
+              var tmp3 = data.split("EntitySave:\n")[1];
+              game.world = tmp1.name;
+              game.generation.respawn = tmp1.respawn;
+              game.generation.puddle = tmp1.puddle;
+              game.generation.mode = tmp1.mode;
+              game.blockLoad(tmp2);
+              game.entityLoad(tmp3);
+              setTimeout(function(){
+                if(!game.player){
+                  game.player = new game.entity("player", [5, 1.5, 5]);
+                };
+              }, 1000);
+            };
+            game.getWorldName = function (data) {
+              var tmp1 = JSON.parse(data.split("WorldData:\n")[1].split("\nBlockSave:")[0]);
+              return tmp1.name;
+            };
+            game.download = function (name, contents) {
+              var element = document.createElement('a');
+              element.setAttribute('href','data:text/plain;charset=utf-8,' + encodeURIComponent(contents));
+              element.setAttribute('download', name);
+              document.body.appendChild(element);
+              element.click();
+              element.outerHTML = "";
+            };
             window.addEventListener('resize', function (){
                 game.camera.aspect = window.innerWidth / window.innerHeight;
                 game.renderer.setSize( window.innerWidth, window.innerHeight );
             });
+            game.saveLoop = function(){
+              game.save(1);
+              game.UI.save();
+              setTimeout(game.saveLoop, 40000);
+            };
             window.onload = function (){
-                console.log("BlockBuilder3D "+game.version+" running on "+navigator.platform)
+                console.log("BlockBuilder3D "+game.version+" running on "+navigator.platform);
+                Ammo();
             };
         </script>
         <script src="js/block.js"></script>

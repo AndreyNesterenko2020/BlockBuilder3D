@@ -1,6 +1,7 @@
 game.mouse = new THREE.Vector2();
 game.maxBlockParticles = 5;
 game.blockGrid = {};
+game.chunkGrid = {};
 game.getBlock = function (x, y, z) {
   if(game.blockGrid[x]){
     if(game.blockGrid[x][y]){
@@ -11,16 +12,56 @@ game.getBlock = function (x, y, z) {
   };
   return false;
 };
+game.getChunk = function (x, y, z) {
+  if(game.chunkGrid[Math.floor(x/8)*8]){
+    if(game.chunkGrid[Math.floor(x/8)*8][Math.floor(z/8)*8]){
+      return game.chunkGrid[Math.floor(x/8)*8][Math.floor(z/8)*8];
+    };
+  };
+  return false;
+};
+game.refreshChunks = function () {
+  game.chunks.forEach(function (chunk) {
+    chunk.unload();
+  });
+};
+game.blockSave = function () {
+  var data = [];
+  Object.values(game.blockObjects).forEach(function (block) {
+    if(block[0]) return;
+    data.push({type: block.type, x: block.block.position.x, y: block.block.position.y, z: block.block.position.z});
+  });
+  return JSON.stringify(data);
+};
+game.blockLoad = function (data) {
+  try {
+    JSON.parse(data).forEach(function (block){
+      new game.block(block.x, block.y, block.z, block.type, false, true);
+    });
+    return true;
+  } catch (error) {
+    return false;
+  };
+};
 game.block = class {
-  constructor (x,y,z, type, audio) {
+  constructor (x,y,z, type, audio, nogeneratechunk) {
+    x = Math.round(x);
+    y = Math.round(y);
+    z = Math.round(z);
     if(game.getBlock(x, y, z)) {
       return;
     };
-    if(!game.blockTypes[type]) {
-      return;
-    };
     this.block = new THREE.Mesh(game.geometry);
+    this.breakOverlay = new THREE.Mesh(game.geometry);
+    if(!game.materials["textures/break0.png"]) game.materials["textures/break0.png"] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/break0.png"), transparent: true});
+    this.breakOverlay.position.set(x, y, z);
+    this.breakOverlay.material = game.materials["textures/break0.png"];
+    game.scene.add(this.breakOverlay);
+    this.block.visible = false;
     this.object = this.block;
+    if(!game.blockTypes[type]) {
+      this.block.material = game.materials.defaultMaterial;;
+    };
     this.getPosition = function (){
       return({position:[x-0.5,y,z], rotation:[0, 0, 0]})
     };
@@ -35,6 +76,7 @@ game.block = class {
     test.onload = function () {
       if(!game.materials[type]) {
         game.materials[this_.type] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+".png")});
+        game.materials[this_.type].transparent = true;
       };
       this_.block.material = game.materials[this_.type];
     };
@@ -49,20 +91,51 @@ game.block = class {
     this.block.position.z = z;
     this.block.block = this;
     game.scene.add(this.block);
-    var transform = new Ammo.btTransform();
-    transform.setIdentity();
-    transform.setOrigin(new Ammo.btVector3(x, y, z));
-    transform.setRotation(new Ammo.btQuaternion(0, 0, 0, 1));
-    var motionState = new Ammo.btDefaultMotionState( transform );
-    var colShape = new Ammo.btBoxShape(new Ammo.btVector3(0.5, 0.5, 0.5));
-    colShape.setMargin(0.05);
-    var localInertia = new Ammo.btVector3(0, 0, 0);
-    colShape.calculateLocalInertia(0, localInertia );
-    var rbInfo = new Ammo.btRigidBodyConstructionInfo(0, motionState, colShape, localInertia);
-    var body = new Ammo.btRigidBody( rbInfo );
-    body.setActivationState(4);
-    body.setCollisionFlags(2);
-    game.physics.physicsWorld.addRigidBody(body);
+    this.isLoaded = false;
+    this.load = function () {
+      if(this.isLoaded) return;
+      var transform = new Ammo.btTransform();
+      transform.setIdentity();
+      transform.setOrigin(new Ammo.btVector3(x, y, z));
+      transform.setRotation(new Ammo.btQuaternion(0, 0, 0, 1));
+      var motionState = new Ammo.btDefaultMotionState( transform );
+      var colShape = new Ammo.btBoxShape(new Ammo.btVector3(0.5, 0.5, 0.5));
+      colShape.setMargin(0.05);
+      var localInertia = new Ammo.btVector3(0, 0, 0);
+      colShape.calculateLocalInertia(0, localInertia );
+      var rbInfo = new Ammo.btRigidBodyConstructionInfo(0, motionState, colShape, localInertia);
+      var body = new Ammo.btRigidBody( rbInfo );
+      body.setActivationState(4);
+      body.setCollisionFlags(2);
+      game.physics.physicsWorld.addRigidBody(body);
+      this.hitboxPhysics = body;
+      this.block.visible = true;
+      this.break = 0;
+      if(game.blockTypes[this.type]) {
+        if(game.blockTypes[this.type][0] == false){
+          this.block.visible = false;
+        };
+        if(game.blockTypes[this.type][1] == false){
+          game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
+        };
+      };
+      this.isLoaded = true;
+    };
+    this.unload = function () {
+      if(!this.isLoaded) return;
+      if(this.hitboxPhysics) {
+        game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
+      };
+      this.block.visible = false;
+      this.hitboxPhysics = undefined;
+      this.isLoaded = false;
+    };
+    if(!game.getChunk(x, y, z)){
+      this.chunk = new game.chunk(Math.floor(x/8)*8,Math.floor(z/8)*8, nogeneratechunk);
+    } else {
+      this.chunk = game.getChunk(x, y, z);
+    };
+    this.chunk.blocks.push(this);
     game.blocks[Object.keys(game.blocks).length+1] = this.block;
     game.blockObjects[Object.keys(game.blocks).length+1] = this;
     if(!game.blockGrid[x]){
@@ -72,18 +145,9 @@ game.block = class {
       game.blockGrid[x][y] = {};
     };
     game.blockGrid[x][y][z] = this;
-    this.hitboxPhysics = body;
-    this.breakable = game.blockTypes[this.type][4];
-    if(game.blockTypes[this.type]) {
-      this.oncreate = game.blockTypes[this.type][2];
-      this.onbreak = game.blockTypes[this.type][3];
-      if(game.blockTypes[this.type][0] == false){
-        this.block.visible = false;
-      };
-      if(game.blockTypes[this.type][1] == false){
-        game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
-      };
-    };
+    this.oncreate = game.blockTypes[this.type][2];
+    this.onbreak = game.blockTypes[this.type][3];
+    this.hardness = game.blockTypes[this.type][4];
     this.delete = function (noaudio) {
       var particles = [];
       function particleInit(){
@@ -133,11 +197,15 @@ game.block = class {
       if(!noaudio) {
         game.UI.sound(this.type+Math.round(Math.random()*2+1));
       };
+      this.chunk.blocks.splice(this.chunk.blocks.indexOf(this), 1);
       var b = this.block;
+      game.scene.remove(this.breakOverlay);
       this.block.position.y = -255;
       setTimeout(function(){game.scene.remove(b)}, 1000);
       game.blockGrid[x][y][z] = undefined;
-      game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
+      if(this.hitboxPhysics) {
+        game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
+      };
       for(var i in this){
         delete this_[i];
       };
@@ -147,6 +215,43 @@ game.block = class {
       this.oncreate();
     };
     //return block;
+    if(this.chunk.isLoaded){
+      this.load();
+    };
+  };
+};
+game.chunk = class {
+  constructor (x, z, nogeneratechunk){
+    if(!game.chunkGrid[x]){
+      game.chunkGrid[x] = {};
+    };
+    if(!game.chunkGrid[x][z]){
+      game.chunkGrid[x][z] = this;
+    } else {
+      return;
+    };
+    game.chunks.push(this);
+    this.blocks = [];
+    this.x = x;
+    this.z = z;
+    this.isLoaded = false;
+    this.load = function () {
+      if(this.isLoaded) return;
+      this.blocks.forEach(function (block){
+        block.load();
+      });
+      this.isLoaded = true;
+    };
+    this.unload = function () {
+      if(!this.isLoaded) return;
+      this.blocks.forEach(function (block){
+        block.unload();
+      });
+      this.isLoaded = false;
+    };
+    if(!nogeneratechunk) {
+      game.generation.generate(x, z);
+    };
   };
 };
 document.addEventListener("mousemove", event => {
@@ -158,7 +263,23 @@ document.addEventListener("mousemove", event => {
   };
   game.raycaster.setFromCamera(game.mouse, game.camera);
 });
-game.renderer.domElement.addEventListener("mousedown", () => {
+game.mousedownID = -1;  //Global ID of mouse down interval
+game.blockmousedown = function (event) {
+  if(game.mousedownID==-1)  //Prevent multimple loops!
+     game.mousedownID = setInterval(function(){game.whilemousedown(event)}, 300 /*execute every 300ms*/);
+}
+game.blockmouseup = function (event) {
+   if(game.mousedownID!=-1) {  //Only stop if exists
+     clearInterval(game.mousedownID);
+     game.mousedownID=-1;
+   };
+   if(game.lastBlockSelected) {
+     game.lastBlockSelected.breakOverlay.material = game.materials["textures/break0.png"];
+     game.lastBlockSelected.break = 0;
+  };
+  game.player.entityData.handActionCooldown = false;
+};
+game.whilemousedown = function(event) {
   if(game.controls.PointerLock.isLocked == false){
     return;
   };
@@ -179,10 +300,31 @@ game.renderer.domElement.addEventListener("mousedown", () => {
     };
   } else {
     if(event.button == 0){
-      if (intersects.length > 0 && intersects[0].distance <= game.range && !intersects[0].object.entity && intersects[0].object.block.breakable) {
-        intersects[0].object.block.inventory.dropAll(true);
-        intersects[0].object.block.delete();
+      if (intersects.length > 0 && intersects[0].distance <= game.range && !intersects[0].object.entity) {
+        game.lastBlockSelected = intersects[0].object.block;
+        if(!game.player.entityData.handActionCooldown){
+          game.player.entityData.handActionCooldown = true;
+          game.player.stopAnimations();
+          game.player.playAnimation("handAction", 5);
+          setTimeout(function(){game.player.playAnimation("handAction", 3, 0)}, 130);
+          setTimeout(function(){game.player.entityData.handActionCooldown = false}, 100);
+        };
+        if(game.player.inventory.slots[game.player.inventory.selection] && game.player.inventory.slots[game.player.inventory.selection].miningExceptions[intersects[0].object.block.type]){
+          intersects[0].object.block.break += game.player.inventory.slots[game.player.inventory.selection].miningExceptions[intersects[0].object.block.type];
+        } else {
+          intersects[0].object.block.break += 0.1;
+        };
+        if(intersects[0].object.block.break >= intersects[0].object.block.hardness){
+          intersects[0].object.block.inventory.dropAll(true);
+          intersects[0].object.block.delete();
+        };
+        game.UI.sound(intersects[0].object.block.type+Math.round(Math.random()*2+1), 0.5);
+        if(!game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"]) game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"), transparent: true});
+        intersects[0].object.block.breakOverlay.material = game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"];
       };
     };
   };
-});
+}
+game.renderer.domElement.addEventListener("mousedown", game.blockmousedown);
+game.renderer.domElement.addEventListener("mouseup", game.blockmouseup);
+game.renderer.domElement.addEventListener("mouseout", game.blockmouseup);

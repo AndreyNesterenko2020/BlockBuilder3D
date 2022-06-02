@@ -1,4 +1,5 @@
 game.entities = [];
+//some functions to make life easier
 game.getEntitiesByName = function (name) {
   var result = [];
   for(var i = 0; i < game.entities.length; i++){
@@ -11,6 +12,8 @@ game.getEntitiesByName = function (name) {
   }
   return result;
 };
+
+//math mumbo jumbo
 game.eulerQuaternion = function (rot) {
   var c1 = Math.cos(rot[1]*(Math.PI / 180)/2);
   var s1 = Math.sin(rot[1]*(Math.PI / 180)/2);
@@ -50,6 +53,45 @@ game.quaternionEuler = function (q1) {
   var bank = Math.atan2(2*q1.x*q1.w-2*q1.y*q1.z , -sqx + sqy - sqz + sqw) * (180/Math.PI);
   return([bank, heading, attitude]);
 };
+
+//saving and loading
+game.entitySave = function () {
+  var data = [];
+  game.entities.forEach(function (entity){
+    if(entity[0]) return;
+    var inventory = false;
+    if(!!entity.inventory){
+      inventory = [];
+      Object.values(entity.inventory.slots).forEach(function (item) {
+        if(!item) return;
+        inventory.push({type: item.type, amount: item.amount, slot: item.slot});
+      });
+    };
+    data.push({type: entity.type, position: entity.getPosition().position, rotation: entity.getPosition().rotation, name: entity.name, health: entity.health, AI: entity.AI, hasInventory: !!entity.inventory, slots: !!entity.inventory&&entity.inventory.maxSlots, inventory: inventory, entityData: entity.entityData});
+  });
+  return JSON.stringify(data);
+};
+game.entityLoad = function (data) {
+  try {
+    JSON.parse(data).forEach(function (entity){
+      var newentity = new game.entity(entity.type, entity.position, entity.rotation, entity.name, !entity.AI);
+      newentity.health = entity.health;
+      newentity.entityData = entity.entityData;
+      if(newentity.inventory) newentity.inventory.delete(true);
+      new game.inventory(newentity, entity.slots);
+      if(entity.hasInventory){
+        entity.inventory.forEach(function (item){
+          new game.item(item.type, newentity.inventory, item.amount, true);
+        });
+      };
+    });
+    return true;
+  } catch (error) {
+    return false;
+  };
+};
+
+//main class
 game.entity = class {
   constructor(type, pos, rot, name, noUseAI, oncreate, ondamage, ondeath){
     if(name == undefined){
@@ -73,6 +115,7 @@ game.entity = class {
     this.readOnlyPosition = pos;
     this.readOnlyRotation = game.eulerQuaternion(rot);
     this.hitboxAngularFactor = game.entityTypes[type][9];
+    this.AI = !noUseAI;
     if(noUseAI){
       if(oncreate) {
         this.oncreate = oncreate;
@@ -81,7 +124,7 @@ game.entity = class {
       } else {
         this.oncreate = function(){};
         this.ondamage = function(){};
-        this.ondeath = function(){};
+        this.ondeath = function(){this.delete()};
       };
     } else{
       this.oncreate = game.entityTypes[type][3];
@@ -91,6 +134,8 @@ game.entity = class {
     this.stoppingAnimations = false;
     this.movement = [0, 0, 0, 0];
     this.movementSpeed = game.entityTypes[type][6];
+    this.entityData = {};
+    this.grouped = false;
     var this_ = this;
     new THREE.GLTFLoader().load("models/"+type+".glb", function(glb){
       var object = glb["scene"].children[0];
@@ -109,6 +154,7 @@ game.entity = class {
       let body = new Ammo.btRigidBody(rbInfo);
       body.setAngularFactor(0, 0, 0);
       body.setFriction(0);
+      body.setActivationState(4);
       game.physics.physicsWorld.addRigidBody(body); 
       this_.hitboxPhysics = body;
       this_.hitboxCombat = new THREE.Mesh(game.geometry);
@@ -124,8 +170,15 @@ game.entity = class {
       this_.hitboxDirection.material.transparent = true;
       game.scene.add(this_.hitboxDirection);
       game.entities.push(this_);
-      this_.animations = object.morphTargetInfluences;
-      this_.animationDict = object.morphTargetDictionary;
+      this_.animationObject = this_.object;
+      if(this_.object.children.length > 0){
+        this_.animationObject = this_.object.children[0];
+      };
+      this_.animations = this_.animationObject.morphTargetInfluences;
+      this_.animationDict = this_.animationObject.morphTargetDictionary;
+      this_.object.children.forEach(function (object) {
+        object.morphTargetInfluences = this_.animations;
+      });
       this_.jumpHeight = game.entityTypes[type][8];
       this_.attackable = game.entityTypes[type][10];
       this_.playAnimation = function(name, speed, target){
@@ -191,7 +244,7 @@ game.entity = class {
         raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
         var intersects = raycaster.intersectObjects(objects);
         if(intersects[0] != undefined && intersects[0].distance <= this_.range) {
-          if(intersects[0].object.entity && intersects[0].object.entity.attackable) {
+          if(intersects[0].object.entity && intersects[0].object.entity.attackable && intersects[0].object.entity.chunk && intersects[0].object.entity.chunk.isLoaded) {
             intersects[0].object.entity.health -= this_.attackDamage;
             intersects[0].object.entity.ondamage(this_);
             return intersects[0].object.entity;
@@ -241,6 +294,8 @@ game.entity = class {
     });
   };
 };
+
+//entity tick (update stuff)
 game.entityPhysics = function(){
     setTimeout(game.entityPhysics, 1);
     game.physics.physicsWorld.stepSimulation(game.clock.getDelta(), 10 );
@@ -251,13 +306,19 @@ game.entityPhysics = function(){
         if(!game.entities[i]){
           continue;
         };
+        game.entities[i].chunk = game.getChunk(game.entities[i].getPosition().position[0], game.entities[i].getPosition().position[1], game.entities[i].getPosition().position[2]);
+        if(game.entities[i].chunk && game.entities[i].chunk.isLoaded){
+          game.entities[i].object.visible = true;
+        } else {
+          game.entities[i].object.visible = false;
+        }
         game.entities[i].hitboxDirection.scale.x = game.entities[i].range;
         if(game.debug == true){
-          game.entities[i].hitboxCombat.material.opacity = 1;
-          game.entities[i].hitboxDirection.material.opacity = 1;
+          game.entities[i].hitboxCombat.visible = true;
+          game.entities[i].hitboxDirection.visible = true;
         } else {
-          game.entities[i].hitboxCombat.material.opacity = 0;
-          game.entities[i].hitboxDirection.material.opacity = 0;
+          game.entities[i].hitboxCombat.visible = false;
+          game.entities[i].hitboxDirection.visible = false;
         };
         if(game.entities[i].health < 0){
           game.entities[i].health = 0;
@@ -299,7 +360,7 @@ game.entityPhysics = function(){
         let objAmmo = game.entities[i].hitboxPhysics;
         let motion = objAmmo.getMotionState();
         game.entities[i].hitboxCombat.updateMatrixWorld();
-        if (motion && game.entities[i].physicsEnabled) {
+        if (motion && game.entities[i].physicsEnabled && game.entities[i].chunk && game.entities[i].chunk.isLoaded) {
             motion.getWorldTransform(game.physics.tmpTrans);
             objThree.position.set(game.entities[i].readOnlyPosition[0], game.entities[i].readOnlyPosition[1], game.entities[i].readOnlyPosition[2]);
             game.entities[i].hitboxCombat.position.set(game.physics.tmpTrans.getOrigin().x(), game.physics.tmpTrans.getOrigin().y(), game.physics.tmpTrans.getOrigin().z());
