@@ -1,10 +1,14 @@
 game.generation.top = 0;
 game.generation.size = 8;
-game.generation.layer = function (type, thickness, width, x, z, top) {
+game.generation.layer = function (type, thickness, width, x, z, top, ore, orechance) {
   for(y = top; y <= top+thickness-1; y++){
     for(x0 = x; x0 <= x+width-1; x0++){
       for(z0 = z; z0 <= z+width-1; z0++){
-        new game.block(x0, y, z0, type);
+        if(Math.random()*100 > orechance) {
+          new game.block(x0, y, z0, ore);
+        } else {
+          new game.block(x0, y, z0, type);
+        };
       };
     };
   };
@@ -58,38 +62,41 @@ game.generation.tree = function(x, y, z) {
 };
 game.generation.generate = function (x, z) {
   var size = game.generation.size;
-  if(game.generation.mode == "simple") {
-    game.generation.layer("plant", 1, size, x, z, 0);
+  if(game.generation.mode == 2){
+    game.generation.layer("world_barrier", 1, size, x, z, -5, "fat", 99);
+    game.generation.layer("lava", 1, size, x, z, -4, undefined, Infinity);
+    game.generation.layer("stone", 3, size, x, z, -3, "iron_ore", 90);
+    game.generation.layer("plant", 1, size, x, z, 0, undefined, Infinity);
   };
-  if(game.generation.mode == "medium") {
-    game.generation.layer("dirt", 1, size, x, z, 0);
-    game.generation.layer("plant", 1, size, x, z, 1);
-  };
-  if(game.generation.mode == "complex") {
-    game.generation.layer("stone", 1, size, x, z, 0);
-    game.generation.layer("dirt", 1, size, x, z, 1);
-    game.generation.layer("plant", 1, size, x, z, 2);
+  if(game.generation.mode == 1){
+    game.generation.layer("world_barrier", 1, size, x, z, -1, "fat", 99);
+    game.generation.layer("plant", 1, size, x, z, 0, undefined, Infinity);
   };
   var cowChance = Math.round(Math.random()*100);
   var pigChance = Math.round(Math.random()*100);
   var tonyChance = Math.round(Math.random()*1000);
   var chickenChance = Math.round(Math.random()*100);
-  if(cowChance>=75){
+  if(cowChance>=80){
     new game.entity("bull", [x+4,2,z+4]);
   };
-  if(cowChance>=75){
+  if(cowChance>=80){
     for(var i = 0; i < Math.random()+1; i++){
       new game.entity("cow", [x+4,2,z+4]);
     };
   };
-  if(pigChance>=80){
+  if(pigChance>=85){
     for(var i = 0; i < Math.random()*3+1; i++){
       new game.entity("pig", [x+4,2,z+4]);
     };
   };
-  if(chickenChance>=75){
+  if(chickenChance>=70){
     for(var i = 0; i < Math.random()+1; i++){
       new game.entity("chicken", [x+4,2,z+4]);
+    };
+  };
+  if(chickenChance>=70){
+    for(var i = 0; i < Math.random()+1; i++){
+      new game.entity("rooster", [x+4,2,z+4]);
     };
   };
   if(tonyChance==1){
@@ -173,6 +180,7 @@ game.generation.generate = function (x, z) {
     new game.block(game.generation.puddle[0], game.generation.puddle[1]-1, game.generation.puddle[2]-1, "dirt");
     new game.block(game.generation.puddle[0]-1, game.generation.puddle[1]-1, game.generation.puddle[2]-1, "dirt");
     new game.block(game.generation.puddle[0]-2, game.generation.puddle[1]-1, game.generation.puddle[2]-1, "dirt");
+    /*
     new game.block(game.generation.puddle[0]+2, game.generation.puddle[1], game.generation.puddle[2], "world_barrier");
     new game.block(game.generation.puddle[0]+3, game.generation.puddle[1], game.generation.puddle[2], "world_barrier");
     new game.block(game.generation.puddle[0], game.generation.puddle[1], game.generation.puddle[2], "world_barrier");
@@ -196,6 +204,7 @@ game.generation.generate = function (x, z) {
     new game.block(game.generation.puddle[0]-3, game.generation.puddle[1], game.generation.puddle[2]+1, "world_barrier");
     new game.block(game.generation.puddle[0]+3, game.generation.puddle[1], game.generation.puddle[2]-1, "world_barrier");
     new game.block(game.generation.puddle[0]+3, game.generation.puddle[1], game.generation.puddle[2]+1, "world_barrier");
+    */
   };
   if(game.generation.trees) {
     for(var i = 0; i <= Math.random()*3+1; i++){

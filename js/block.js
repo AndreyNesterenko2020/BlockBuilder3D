@@ -2,10 +2,12 @@ game.mouse = new THREE.Vector2();
 game.maxBlockParticles = 5;
 game.blockGrid = {};
 game.chunkGrid = {};
+game.loadedBlocks = [];
 game.getBlock = function (x, y, z) {
   if(game.blockGrid[x]){
     if(game.blockGrid[x][y]){
       if(game.blockGrid[x][y][z]){
+        return game.blockGrid[x][y][z];
         return game.blockGrid[x][y][z];
       };
     };
@@ -13,9 +15,9 @@ game.getBlock = function (x, y, z) {
   return false;
 };
 game.getChunk = function (x, y, z) {
-  if(game.chunkGrid[Math.floor(x/8)*8]){
-    if(game.chunkGrid[Math.floor(x/8)*8][Math.floor(z/8)*8]){
-      return game.chunkGrid[Math.floor(x/8)*8][Math.floor(z/8)*8];
+  if(game.chunkGrid[Math.floor(Math.round(x)/8)*8]){
+    if(game.chunkGrid[Math.floor(Math.round(x)/8)*8][Math.floor(Math.round(z)/8)*8]){
+      return game.chunkGrid[Math.floor(Math.round(x)/8)*8][Math.floor(Math.round(z)/8)*8];
     };
   };
   return false;
@@ -58,10 +60,9 @@ game.block = class {
     this.breakOverlay.material = game.materials["textures/break0.png"];
     game.scene.add(this.breakOverlay);
     this.block.visible = false;
+    this.breakOverlay.visible = false;
+    this.breakOverlay.scale.set(1.00005, 1.00005, 1.00005);
     this.object = this.block;
-    if(!game.blockTypes[type]) {
-      this.block.material = game.materials.defaultMaterial;;
-    };
     this.getPosition = function (){
       return({position:[x-0.5,y,z], rotation:[0, 0, 0]})
     };
@@ -79,6 +80,9 @@ game.block = class {
         game.materials[this_.type].transparent = true;
       };
       this_.block.material = game.materials[this_.type];
+      if(!game.blockTypes[type]) {
+        this_.block.material = game.materials.defaultMaterial;;
+      };
     };
     test.onerror = function (){
       this_.block.material = game.materials.defaultMaterial;
@@ -94,6 +98,7 @@ game.block = class {
     this.isLoaded = false;
     this.load = function () {
       if(this.isLoaded) return;
+      /*
       var transform = new Ammo.btTransform();
       transform.setIdentity();
       transform.setOrigin(new Ammo.btVector3(x, y, z));
@@ -108,25 +113,38 @@ game.block = class {
       body.setActivationState(4);
       body.setCollisionFlags(2);
       game.physics.physicsWorld.addRigidBody(body);
+      */ 
+      var body = new CANNON.Body({mass: 0});
+      body.position.set(x, y, z);
+      body.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
+      game.physics.world.add(body);
       this.hitboxPhysics = body;
       this.block.visible = true;
+      this.breakOverlay.visible = true;
       this.break = 0;
+      if(game.loadedBlocks.indexOf(this.block) == -1) {
+        game.loadedBlocks.push(this.block);
+      };
       if(game.blockTypes[this.type]) {
         if(game.blockTypes[this.type][0] == false){
           this.block.visible = false;
         };
         if(game.blockTypes[this.type][1] == false){
-          game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
+          game.physics.world.remove(this.hitboxPhysics);
         };
       };
       this.isLoaded = true;
     };
     this.unload = function () {
+      if(game.loadedBlocks.indexOf(this.block) != -1) {
+        game.loadedBlocks.splice(game.loadedBlocks.indexOf(this.block), 1);
+      };
       if(!this.isLoaded) return;
       if(this.hitboxPhysics) {
-        game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
+        game.physics.world.remove(this.hitboxPhysics);
       };
       this.block.visible = false;
+      this.breakOverlay.visible = false;
       this.hitboxPhysics = undefined;
       this.isLoaded = false;
     };
@@ -149,6 +167,11 @@ game.block = class {
     this.onbreak = game.blockTypes[this.type][3];
     this.hardness = game.blockTypes[this.type][4];
     this.delete = function (noaudio) {
+      if(game.loadedBlocks.indexOf(this.block) != -1) {
+        game.loadedBlocks.splice(game.loadedBlocks.indexOf(this.block), 1);
+      };
+      this.block.geometry.dispose();
+      this.block.material.dispose();
       var particles = [];
       function particleInit(){
         for(let i = 0; i < game.maxBlockParticles; i++){
@@ -201,10 +224,10 @@ game.block = class {
       var b = this.block;
       game.scene.remove(this.breakOverlay);
       this.block.position.y = -255;
-      setTimeout(function(){game.scene.remove(b)}, 1000);
+      setTimeout(function(){b.removeFromParent()}, 1000);
       game.blockGrid[x][y][z] = undefined;
       if(this.hitboxPhysics) {
-        game.physics.physicsWorld.removeRigidBody(this.hitboxPhysics.a);
+        game.physics.world.remove(this.hitboxPhysics);
       };
       for(var i in this){
         delete this_[i];
@@ -283,7 +306,7 @@ game.whilemousedown = function(event) {
   if(game.controls.PointerLock.isLocked == false){
     return;
   };
-  var objects = Object.values(game.blocks)
+  var objects = Object.values(game.loadedBlocks)
   for(var loop = 0; loop < game.entities.length; loop++){
     if(game.entities[loop] && game.entities[loop][0] != "deleted"){
       objects.push(game.entities[loop].hitboxCombat);
@@ -319,7 +342,7 @@ game.whilemousedown = function(event) {
           intersects[0].object.block.delete();
         };
         game.UI.sound(intersects[0].object.block.type+Math.round(Math.random()*2+1), 0.5);
-        if(!game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"]) game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"), transparent: true});
+        if(!game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"]) game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"), alphaTest: 0.5});
         intersects[0].object.block.breakOverlay.material = game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"];
       };
     };

@@ -36,7 +36,7 @@ game.item = class {
     };
     this.use = function () {
       this.amount -= 1;
-      if(this.amount == 0) {
+      if(this.amount <= 0) {
         this.delete();
       };
     };

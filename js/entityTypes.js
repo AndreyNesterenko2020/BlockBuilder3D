@@ -2,14 +2,16 @@
 game.entityTypes = {
   cow: [50,15,[2.3,1.5,1], function(){
     new game.inventory(this, 1);
-    new game.item("meat", this.inventory);
+    if(!this.inventory.slots[1]) {
+      new game.item("meat", this.inventory);
+    };
     var this_ = this;
     function animLoop(){
       if(this_.health == 0 || this_.health == undefined){
         this_.animations[0]=0;
         return;
       };
-      var objects = Object.values(game.blocks);
+      var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
       raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
@@ -37,10 +39,10 @@ game.entityTypes = {
             };
         };
         if(game.bullAnger == false) {
-          this_.movementSpeed = 2.5;
+          this_.movementSpeed = 1.5;
           this_.lookAt(closestEntity.getPosition().position, true);
         } else {
-          this_.movementSpeed = 5;
+          this_.movementSpeed = 4;
           this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
         };
         this_.movement[0] = 1;
@@ -57,7 +59,7 @@ game.entityTypes = {
       setTimeout(walkLoop, 200);
       healLoop();
     }, function(){
-      this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 2, 0));
+      this.hitboxPhysics.velocity.y = 2;
       if(!game.bullAnger){
         game.UI.sound("bull_anger");
       };
@@ -70,10 +72,12 @@ game.entityTypes = {
       this.stopAnimations();
       this.playAnimation("death");
       setTimeout(this.delete, 2000);
-    },2.5, 2, 3, [1, 1, 1], true],
+    },1.5, 2, 3, [1, 1, 1], true],
   bull: [50,25,[2.5,1.75,1.25], function(){
     new game.inventory(this, 1);
-    new game.item("meat", this.inventory);
+    if(!this.inventory.slots[1]) {
+      new game.item("meat", this.inventory);
+    };
     var this_ = this;
     game.bullThrowOff = false;
     var attack = true;
@@ -82,7 +86,7 @@ game.entityTypes = {
         this_.animations[2] = 0;
         return;
       };
-      var objects = Object.values(game.blocks);
+      var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
       raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
@@ -100,7 +104,7 @@ game.entityTypes = {
         };
         game.bullThrowOff = false;
         if(!game.bullAnger) {
-          this_.movementSpeed = 3;
+          this_.movementSpeed = 2;
           this_.animations[2] = 0;
           this_.animations[3] = 0;
           this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
@@ -185,7 +189,7 @@ game.entityTypes = {
       setTimeout(walkLoop, 200);
       healLoop();
     }, function(){
-      this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 1, 0));
+      this.hitboxPhysics.velocity.y = 1;
       if(!game.bullAnger){
         game.UI.sound("bull_anger");
       };
@@ -198,17 +202,19 @@ game.entityTypes = {
       this.stopAnimations();
       this.playAnimation("death");
       setTimeout(this.delete, 2000);
-    },3, 3, 3, [1, 1, 1], true],
+    },2, 3, 3, [1, 1, 1], true],
   pig: [30,10,[1.5,0.9,0.6], function(){
     new game.inventory(this, 1);
-    new game.item("meat", this.inventory);
+    if(!this.inventory.slots[1]) {
+      new game.item("meat", this.inventory);
+    };
     var this_ = this;
     function animLoop(){
       if(this_.health == 0 || this_.health == undefined){
         this_.animations[0]=0;
         return;
       };
-      var objects = Object.values(game.blocks);
+      var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
       raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
@@ -225,10 +231,10 @@ game.entityTypes = {
           return
         };
         if(game.bullAnger){
-          this_.movementSpeed = 6;
+          this_.movementSpeed = 4;
           this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
         } else {
-          this_.movementSpeed = 3;
+          this_.movementSpeed = 2;
           if(game.generation.puddle){
             this_.lookAt(game.generation.puddle, true);
           } else {
@@ -249,7 +255,7 @@ game.entityTypes = {
       setTimeout(walkLoop, 200);
       healLoop();
     }, function(){
-      this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 2, 0));
+      this.hitboxPhysics.velocity.y = 2;
       if(!game.bullAnger){
         game.UI.sound("bull_anger");
       };
@@ -262,8 +268,8 @@ game.entityTypes = {
       this.stopAnimations();
       this.playAnimation("death");
       setTimeout(this.delete, 2000);
-    },3, 2, 3, [1, 1, 1], true],
-  player: [100,1,[0.9,1.95,0.9], function(){
+    },2, 2, 3, [1, 1, 1], true],
+  player: [100,1,[0.6,1.95,0.6], function(){
     new game.inventory(this, 18, function(item, amount){game.UI.itemPickedUp(item, amount)});
     this.entityData.handActionCooldown = false;
     this.entityData.attackCooldown = false;
@@ -271,9 +277,12 @@ game.entityTypes = {
     var this_ = this;
     var sin = 0;
     var walk = game.UI.sound("walk");
+    var fire = game.UI.sound("fire");
     walk.loop = true;
     walk.muted = true;
-    game.lastAttacker = {name: "void"};
+    fire.loop = true;
+    fire.muted = true;
+    this_.entityData.lastAttacker = {name: "void"};
     game.renderer.domElement.addEventListener("mousedown", function (event){
       if(this_.health == 0 || this_[0] == "deleted" || game.controls.PointerLock.isLocked == false){
         return;
@@ -368,6 +377,7 @@ game.entityTypes = {
       var rotation = [game.quaternionEuler(game.camera.quaternion)[2], game.quaternionEuler(game.camera.quaternion)[1]+90, game.quaternionEuler(game.camera.quaternion)[0]]
       if(this_.health == 0){
         walk.muted = true;
+        fire.muted = true;
         return;
       };
       if(game.gamemode == 0){
@@ -399,18 +409,58 @@ game.entityTypes = {
       this_.health += 2;
       setTimeout(healLoop, 2000);
     };
+    function fireDetect () {
+      if(this_.health <= 0) {
+        return;
+      };
+      if(game.getBlock(Math.round(this_.getPosition().position[0]), Math.round(this_.getPosition().position[1]), Math.round(this_.getPosition().position[2]))) {
+        if(game.getBlock(Math.round(this_.getPosition().position[0]), Math.round(this_.getPosition().position[1]), Math.round(this_.getPosition().position[2])).type == "lava") {
+          this_.entityData.lastAttacker = {name: "lava"};
+          this_.health -= 10;
+          game.UI.sound("damage"+Math.round(Math.random()*2+1));
+          this_.jumpHeight = 0.75;
+          this_.movementSpeed = 0.5;
+          game.UI.fire.style.display = "block";
+          fire.muted = false;
+        };
+      } else {
+        fire.muted = true;
+        this_.movementSpeed = game.entityTypes.player[6];
+          this_.jumpHeight = game.entityTypes.player[8];
+          game.UI.fire.style.display = "none";
+      };
+      if(game.getBlock(Math.round(this_.getPosition().position[0]), Math.round(this_.getPosition().position[1]-1), Math.round(this_.getPosition().position[2]))) {
+        if(game.getBlock(Math.round(this_.getPosition().position[0]), Math.round(this_.getPosition().position[1]-1), Math.round(this_.getPosition().position[2])).type == "lava") {
+          this_.entityData.lastAttacker = {name: "lava"};
+          this_.health -= 10;
+          game.UI.sound("damage"+Math.round(Math.random()*2+1));
+          this_.jumpHeight = 0.75;
+          this_.movementSpeed = 0.5;
+          game.UI.fire.style.display = "block";
+          fire.muted = false;
+        };
+      } else {
+        fire.muted = true;
+        this_.movementSpeed = game.entityTypes.player[6];
+          this_.jumpHeight = game.entityTypes.player[8];
+          game.UI.fire.style.display = "none";
+      };
+      setTimeout(fireDetect, 500);
+    };
+    setTimeout(fireDetect, 100);
     setTimeout(walkLoop, 100);
     healLoop();
   },
   function (entity){
-    game.lastAttacker = entity;
+    this.entityData.lastAttacker = entity;
+    var this_ = this;
     setTimeout(function(){
-      if(game.lastAttacker == entity) {
-        game.lastAttacker = {name: "void"};
+      if(this_.entityData.lastAttacker == entity) {
+        this_.entityData.lastAttacker = {name: "void"};
       };
     }, 7000);
     game.UI.damage();
-    this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 2, 0));
+    this.hitboxPhysics.velocity.y = 2;
     game.UI.sound("damage"+Math.round(Math.random()*2+1));
   },
   function (){
@@ -418,7 +468,7 @@ game.entityTypes = {
     this.inventory.delete();
     game.UI.die();
     game.UI.sound("damage"+Math.round(Math.random()*2+1));
-  },5, 4, 6, [0, 0, 0], true],
+  },3, 4, 4.5, [0, 0, 0], true],
   item: [5,1,[0.25,0.25,0.25], function(){
     var this_ = this;
     if(!this.entityData.itemAmount){
@@ -479,7 +529,9 @@ game.entityTypes = {
   tony: [13,15,[1, 1, 1], function(){
     var this_ = this;
     new game.inventory(this, 10);
-    new game.item("meat", this.inventory, 10); 
+    if(!this.inventory.slots[1]) {
+      new game.item("meat", this.inventory, 10); 
+    };
      function walkLoop(){
         if(this_.health == 0 || this_.health == undefined){
           return
@@ -494,11 +546,13 @@ game.entityTypes = {
   chicken: [20, 15, [0.9, 0.8, 0.6], function(){
     var this_ = this;
     new game.inventory(this, 1);
-    new game.item("chicken", this.inventory);
+    if(!this.inventory.slots[1]) {
+      new game.item("chicken", this.inventory);
+    };
     this.movement[0] = 1;
     function walkLoop(){
       if(this_.health <= 0) return;
-      var objects = Object.values(game.blocks);
+      var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
       raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
@@ -509,7 +563,17 @@ game.entityTypes = {
           this_.playAnimation("flap", 1, 0);
         }, 300);
       };
-      this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+      var closestEntity = undefined;
+      var closestDistance = Infinity;
+      for(var i = 0; i < game.entities.length; i++){
+          if(game.entities[i].type != "rooster" || game.entities[i].health == 0){
+              continue;
+          };
+          if(closestDistance > game.entities[i].hitboxCombat.position.distanceTo(this_.hitboxCombat.position)){
+              closestDistance = game.entities[i].hitboxCombat.position.distanceTo(this_.hitboxCombat.position);
+              closestEntity = game.entities[i];
+          };
+      };
       if(Math.random()*100 >= 75){
         this_.movement[0] = 0;
         this_.stopAnimations();
@@ -520,6 +584,11 @@ game.entityTypes = {
         }, 500);
       };
       setTimeout(walkLoop, Math.random()*2000+700);
+      if(!game.roosterAnger) {
+        this_.lookAt(closestEntity.getPosition().position, true);
+      } else {
+        this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+      };
     };
     function animLoop(){
       if(this_.health <= 0) return;
@@ -537,8 +606,95 @@ game.entityTypes = {
     setTimeout(animLoop, 100);
     setTimeout(healLoop, 100);
   }, function(){
-    this.hitboxPhysics.setLinearVelocity(new Ammo.btVector3(0, 1, 0));
+    this.hitboxPhysics.velocity.y = 1;
     game.UI.sound("chicken"+Math.round(Math.random()*2+1));
+    if(!game.roosterAnger){
+      game.UI.sound("rooster_anger");
+    };
+    game.roosterAnger = true;
+  }, function(){
+    this.stopAnimations();
+    this.inventory.dropAll();
+    this.inventory.delete();
+    this.playAnimation("death");
+    setTimeout(this.delete, 2000);
+  }, 2, 1, 5, [1,1,1], true],
+  rooster: [20, 10, [0.9, 0.8, 0.6], function(){
+    var this_ = this;
+    var attack = true;
+    new game.inventory(this, 1);
+    if(!this.inventory.slots[1]) {
+      new game.item("chicken", this.inventory);
+    };
+    this.movement[0] = 1;
+    function walkLoop(){
+      if(this_.health <= 0) return;
+      var objects = Object.values(game.loadedBlocks);
+      var raycaster = new THREE.Raycaster();
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      var intersects = raycaster.intersectObjects(objects);
+      if(intersects[0] != undefined && intersects[0].distance < 1.5){
+        this_.jump();
+      };
+      if(!game.roosterAnger) {
+        this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+        setTimeout(walkLoop, Math.random()*2000+700);
+      } else {
+        try {
+          this_.lookAt(game.player.getPosition().position, true);
+          var objects = [];
+          for(var loop = 0; loop < game.entities.length; loop++){
+            if(game.entities[loop] != this_ && game.entities[loop][0] != "deleted"){
+              objects.push(game.entities[loop].hitboxCombat);
+            };
+          };
+          var raycaster = new THREE.Raycaster();
+          raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxCombat.quaternion), 0, Infinity);
+          var intersects = raycaster.intersectObjects(objects);
+          if(intersects[0]){
+            if(intersects[0].object.entity.type == "player" && attack) {
+              attack = false;
+              var result = this_.attack();
+              this_.animations[2] = 0;
+              this_.playAnimation("peck");
+              setTimeout(function(){this_.playAnimation("peck", 1, 0), 100});
+              if(game.player.health <= 0){
+                game.bullAnger = false;
+                walkLoop();
+                return;
+              };
+              setTimeout(function (){attack = true}, 500);
+            };
+          };
+        } catch (error) {
+          game.roosterAnger = false;
+          attack = true;
+        };
+        setTimeout(walkLoop, 10);
+      };
+    };
+    function animLoop(){
+      if(this_.health <= 0) return;
+      this_.playAnimation("walk");
+      setTimeout(function(){this_.playAnimation("walk", 1, 0); setTimeout(animLoop, 500)}, 500);
+    };
+    function healLoop(){
+      if(this_.health <= 0){
+        return;
+      };
+      this_.health += 2;
+      setTimeout(healLoop, 2000);
+    };
+    setTimeout(walkLoop, 100);
+    setTimeout(animLoop, 100);
+    setTimeout(healLoop, 100);
+  }, function(){
+    this.hitboxPhysics.velocity.y = 1;
+    game.UI.sound("chicken"+Math.round(Math.random()*2+1));
+    if(!game.roosterAnger){
+      game.UI.sound("rooster_anger");
+    };
+    game.roosterAnger = true;
   }, function(){
     this.stopAnimations();
     this.inventory.dropAll();

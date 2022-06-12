@@ -190,6 +190,9 @@ game.UI.commands = {
       amount = "1";
     };
     if(game.itemTypes[item]) {
+      if(Number(amount) <= 0) {
+        return "can only give a minimum of one item to a player.";
+      };
       new game.item(item, game.player.inventory, Number(amount));
       return "gave "+amount+" of "+item+" to the player.";
     } else {
@@ -229,6 +232,11 @@ game.UI.respawn = function (){
   for(var i = 0; i < game.getEntitiesByName("chicken").length; i++){
     if(game.getEntitiesByName("chicken")[i].health != 0){
       game.getEntitiesByName("chicken")[i].health = game.getEntitiesByName("chicken")[i].maxHealth;
+    };
+  };
+  for(var i = 0; i < game.getEntitiesByName("rooster").length; i++){
+    if(game.getEntitiesByName("rooster")[i].health != 0){
+      game.getEntitiesByName("rooster")[i].health = game.getEntitiesByName("rooster")[i].maxHealth;
     };
   };
 };
@@ -286,10 +294,10 @@ game.UI.init = function (){
     game.UI.console.style.pointerEvents = "none";
     game.UI.console.style.border = "solid black 10px";
     game.UI.console.style.backgroundColor = "white";
-    game.UI.console.style.opacity = 0;
+    game.UI.console.style.visibility = "hidden";
     game.UI.console.id = "console";
     game.UI.console.style.transition = "opacity 1s";
-    game.UI.console.innerHTML = "<div id='console_output' style='overflow-y: scroll; height: 85%; margin-left: 1%;'></div><input style=' margin-left: 1%; width: 97%; border: solid black 1px; font-size: 150%;' placeholder='/ to enter console' id='console_input'>";
+    game.UI.console.innerHTML = "<div id='console_output' style='overflow-y: scroll; height: 85%; margin-left: 1%; visibility: visible; overflow: hidden;'></div><input style=' margin-left: 1%; width: 97%; border: solid black 1px; font-size: 150%;' placeholder='/ to enter console' id='console_input'>";
     document.body.appendChild(game.UI.console);
     game.UI.debug = document.createElement("div");
     game.UI.debug.style.top = 0;
@@ -306,6 +314,7 @@ game.UI.init = function (){
     game.UI.lag.style.top = "20%";
     game.UI.lag.innerHTML = "Is the game running slow? Try turning down your render distance.";
     game.UI.lag.style.transition = "opacity 2s";
+    game.UI.lag.style.display = "none";
     document.body.appendChild(game.UI.lag);
     game.UI.console = document.createElement("div");
     game.UI.inventory = [game.UI.add(1),game.UI.add(2),game.UI.add(3),game.UI.add(4),game.UI.add(5),game.UI.add(6)];
@@ -317,6 +326,15 @@ game.UI.init = function (){
     game.UI.swing.style.left = "20%";
     game.UI.swing.style.width = "50%";
     document.body.appendChild(game.UI.swing);
+    game.UI.fire = document.createElement("img");
+    game.UI.fire.src = "textures/fire.gif";
+    game.UI.fire.style.position = "fixed";
+    game.UI.fire.style.top = "10%";
+    game.UI.fire.style.pointerEvents = "none";
+    game.UI.fire.style.left = "20%";
+    game.UI.fire.style.width = "50%";
+    game.UI.fire.style.display = "none";
+    document.body.appendChild(game.UI.fire);
     game.UI.inventoryGUI = document.createElement("div");
     game.UI.inventoryGUI.style.left = "16.65%";
     game.UI.inventoryGUI.style.top = "5%";
@@ -355,6 +373,7 @@ game.UI.add = function (type){
         item.src = missing;
     };
     item.innerHTML = "";
+    item.style.backgroundSize = "100% 100%";
     item.style.height = "70%";
     item.style.width = "10%";
     game.UI.toolbar.appendChild(item);
@@ -370,16 +389,15 @@ game.UI.sound = function (audio, volume) {
   return sound;
 };
 game.UI.die = function () {
-  game.save(1);
   game.controls.PointerLock.unlock();
   game.controls.selection="DeathScreen"
   deathScreen = document.createElement("div");
   deathScreen.style.backgroundColor = "rgba(255, 0, 0, 0.6)";
   deathScreen.style.position = "fixed";
   if(game.generation.respawn){
-    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br><br><br><button style='position: relative' onclick=game.UI.respawn()><h1 style=font-family:BlockBuilder3D>respawn</h1></button>";
+    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.player.entityData.lastAttacker.name+"</h1><br><br><br><br><br><button style='position: relative' onclick=game.UI.respawn()><h1 style=font-family:BlockBuilder3D>respawn</h1></button>";
   } else {
-    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.lastAttacker.name+"</h1><br><br><br><h1>NO RESPAWNING</h1><br><br><br><button style='position: relative' onclick=location.reload()><h1 style=font-family:BlockBuilder3D >leave game</h1></button>";
+    deathScreen.innerHTML = "<h1>YOU ARE DEAD</h1><br><br><br<br><br><h1>Killed by "+game.player.entityData.lastAttacker.name+"</h1><br><br><br><h1>NO RESPAWNING</h1><br><br><br><button style='position: relative' onclick=location.reload()><h1 style=font-family:BlockBuilder3D >leave game</h1></button>";
   };
   deathScreen.style.width = "100%";
   deathScreen.style.height = "100%";
@@ -388,9 +406,10 @@ game.UI.die = function () {
   deathScreen.style.opacity = 0;
   deathScreen.style.transition = "opacity 1s";
   document.body.appendChild(deathScreen);
-  game.UI.consoleMessage(game.player.name+" was Killed by "+game.lastAttacker.name);
+  game.UI.consoleMessage(game.player.name+" was Killed by "+game.player.entityData.lastAttacker.name);
   setTimeout(function (){
     deathScreen.style.opacity = 1;
+    game.save(1);
   },100);
 };
 game.UI.damage = function () {
@@ -476,6 +495,14 @@ game.UI.closeInventory = function () {
   game.UI.toolbar.style.display = "block";
 };
 game.UI.toggleInventory = function () {
+  if(game.UI.first) {
+    game.UI.first.style.border = "solid black 5px";
+  };
+  if(game.UI.second) {
+    game.UI.second.style.border = "solid black 5px";
+  };
+  game.UI.first = undefined;
+  game.UI.second = undefined;
   if(game.UI.inventoryGUI.open){
     game.UI.closeInventory();
   } else {
@@ -530,10 +557,12 @@ game.UI.updateSlots = function () {
   game.UI.slots.forEach(function (slot) {
     try {
       slot.style.backgroundImage = "url(textures/"+game.player.inventory.slots[slot.id.split("slot")[1]].type+".png)";
-      slot.innerHTML = "<h1>"+game.player.inventory.slots[slot.id.split("slot")[1]].amount+"</h1>";
+      slot.innerHTML = "<h1 style='pointer-events:none'>"+game.player.inventory.slots[slot.id.split("slot")[1]].amount+"</h1>";
+      slot.title = game.player.inventory.slots[slot.id.split("slot")[1]].type;
     } catch (error) {
       slot.style.backgroundImage = "url("+white+")";
       slot.innerHTML = "";
+      slot.title = " ";
     };
   });
 };
@@ -550,13 +579,13 @@ document.body.addEventListener("keydown", function(event) {
           console.error(error);
         };
       };
-      setTimeout('document.getElementById("console").style.opacity = 0', 1000);
+      setTimeout('document.getElementById("console").style.visibility = "hidden"', 1000);
       document.getElementById("console_input").value = "";
       document.getElementById("console_input").blur();
       game.controls.PointerLock.lock();
     };
     if(event.key == "/"){
-      document.getElementById("console").style.opacity = 1;
+      document.getElementById("console").style.visibility = "visible";
       document.getElementById("console_input").focus();
       game.controls.PointerLock.unlock();
     };
@@ -609,11 +638,11 @@ document.body.addEventListener("wheel", function(event) {
 });
 game.renderer.domElement.addEventListener("mousedown", () => {
   if(game.controls.PointerLock.isLocked == false){
-    document.getElementById("console").style.opacity = 0;
+    document.getElementById("console").style.visibility = "hidden";
     document.getElementById("console_input").value = "";
     return;
   };
-  var objects = Object.values(game.blocks);
+  var objects = Object.values(game.loadedBlocks);
   for(var loop = 1; loop <= Object.keys(game.entities).length; loop++){
     if(game.entities[loop] && game.entities[loop][0] != "deleted"){
       objects.push(game.entities[loop].hitboxCombat);

@@ -17,7 +17,7 @@
         <script src="js/PointerLockControls.js"></script>
         <script src="js/FirstPersonControls.js"></script>
         <script src="js/missing.js"></script>
-        <script src="js/ammo.js"></script>
+        <script src="js/cannon.js"></script>
         <script src="js/GLTFLoader.js"></script>
         <style>
           @font-face {
@@ -44,12 +44,20 @@
           .slot:hover {
             filter: brightness(50%);
           }
+          input {
+            font-family: blockbuilder3D;
+            font-size: 100%;
+          }
+          select {
+            font-family: blockbuilder3D;
+            font-size: 100%;
+          }
         </style>
     </head>
     <body onbeforeunload="return game.save(1)">
     <h1 id="menu" style="height: 100%; width: 100%; position: fixed; top: 0; margin-left: 0px; margin-top: 0px; text-align: center; background-image: url('textures/dirt.png');">
       <br>BLOCK BUILDER 3D
-      <button style="top: 40%; left: 33.3%; width: 33.3%" onclick="b = 'Name of your world:'; u = 'upload'; document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>World Select<br><button style='top: 70%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='var result = prompt(b); if(!result)return; game.world = result; game.init();'>create new world</button><button type='file' style='top: 80%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(u).click()'>Upload World</button>`; document.getElementsByClassName('worldSelect')[0].style.display = 'block'; Object.keys(localStorage).forEach(function (world){try{var world0 = document.createElement('button'); world0.style='width: 95%; text-align: center; border: solid black 4px; position: relative'; world0.innerHTML = '<h1>'+world+'<h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world0); world0.onclick=function(){game.init(localStorage[world]);}; var world1 = document.createElement('button'); world1.style='width: 5%; text-align: center; border: solid black 4px; position: relative'; world1.innerHTML = '<h1><img src=textures/trash.png></img></h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world1); world1.onclick=function(){localStorage.removeItem(world); location.reload();}}catch(e){console.log(e)}})"><h1>Play</h1></button>
+      <button style="top: 40%; left: 33.3%; width: 33.3%" onclick="worldSelect = 'worldSelect'; u = 'upload'; menu = 'menu'; none = 'none'; n = 'new world-'+Math.floor(Math.random()*1000); worldtype = 'worldtype'; worldname = 'worldname'; thin = 'thin'; thick = 'thick'; worldprompt = `<br>BLOCK BUILDER 3D<br><br><br><br>Create World<br><br>Name: <input autocomplete=off id=worldname ></input><br><br><br>World Type: <select id=worldtype><option>thin</option><option>thick</option></select><br><br>Start with items: <input onclick=game.generation.items=!game.generation.items type=checkbox checked=true><br><br>Allow respawn: <input onclick=game.generation.respawn=!game.generation.respawn type=checkbox checked=true><br><br><button style='left:47%' onclick='game.world = document.getElementById(worldname).value; if(document.getElementById(worldtype).value == thin) {game.generation.mode = 1;} else if (document.getElementById(worldtype).value == thick){game.generation.mode = 2;}; game.init();'><h1>Create World</h1></button>`; document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>World Select<br><button style='top: 70%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(menu).innerHTML = worldprompt; document.getElementById(worldname).value = n; document.getElementsByClassName(worldSelect)[0].style.display = none;'>create new world</button><button type='file' style='top: 80%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(u).click()'>Upload World</button>`; document.getElementsByClassName('worldSelect')[0].style.display = 'block'; Object.keys(localStorage).forEach(function (world){try{var world0 = document.createElement('button'); world0.style='width: 95%; text-align: center; border: solid black 4px; position: relative'; world0.innerHTML = '<h1>'+world+'<h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world0); world0.onclick=function(){game.init(localStorage[world]);}; var world1 = document.createElement('button'); world1.style='width: 5%; text-align: center; border: solid black 4px; position: relative'; world1.innerHTML = '<h1><img src=textures/trash.png></img></h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world1); world1.onclick=function(){localStorage.removeItem(world); location.reload();}}catch(e){console.log(e)}})"><h1>Play</h1></button>
       <button style="top: 50%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>How to play:<br><br>WASD - Move<br>Left Mouse Button - attack/break<br>Right Mouse Button - attack/build<br>E - open inventory<br>T - throw item<br>Scroll/Number Keys - select item from toolbar<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>How to play</h1></button>
       <button style="top: 60%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>Credits:<br><br>ExplodIng_Andrey - creator, modeler, and programmer<br>Asztro - Helping artist<br>SyrupHunter270 - Sound effects<br>Tonytheboi - Sound effects<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>Credits</h1></button>
     </h1>
@@ -58,13 +66,13 @@
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.4.0_alpha1",
+                version: "v1.4.0_alpha2",
                 materials: {},
                 blocks: {},
                 blockObjects: {},
                 chunks: [],
                 UI: {},
-                generation: {mode: "simple", trees: true, puddle: true, chromebook: true, respawn: true, sword: false},
+                generation: {mode: 1, trees: true, puddle: true, chromebook: true, respawn: true, items: false},
                 controls: {selection: null},
                 FOV: 60,
                 range: 4,
@@ -78,11 +86,11 @@
             game.textureLoader = new THREE.TextureLoader();
             game.raycaster = new THREE.Raycaster;
             game.camera = new THREE.PerspectiveCamera(game.FOV, window.innerWidth / window.innerHeight, 0.1, 1000);
-            game.renderer = new THREE.WebGLRenderer();
+            game.renderer = new THREE.WebGLRenderer(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "low-power");
             game.renderer.setSize(window.innerWidth, window.innerHeight*0.96);
             document.body.appendChild(game.renderer.domElement);
             game.geometry = new THREE.BoxGeometry();
-            game.materials.defaultMaterial = new THREE.MeshLambertMaterial({map: game.textureLoader.load(missing)});
+            game.materials.defaultMaterial = new THREE.MeshBasicMaterial({map: game.textureLoader.load(missing)});
             game.scene.background = new THREE.Color(0xffffff);
             game.controls.Orbit = new THREE.OrbitControls(game.camera, game.renderer.domElement);
             game.controls.FirstPerson = new THREE.FirstPersonControls(game.camera, game.renderer.domElement);
@@ -99,6 +107,9 @@
             game.clock = new THREE.Clock();
             game.scene.fog = new THREE.Fog();
             game.gamemode = 0;
+            game.gridMesh = new THREE.GridHelper(80, 10);
+            game.gridMesh.position.y = 1;
+            game.scene.add(game.gridMesh);
             game.renderer.domElement.onclick = function (){
               if (game.controls.selection == "FreeCam" || game.controls.selection == "Player") {
                 game.controls.PointerLock.lock();
@@ -114,6 +125,8 @@
                 if(game.player) {
                   if(game.player.getPosition) {
                     if(game.player.chunk) {
+                      game.gridMesh.position.x = game.player.chunk.x - 0.5;
+                      game.gridMesh.position.z = game.player.chunk.z - 0.5;
                       game.player.chunk.load();
                       if(game.renderMode == 2){
                         try {
@@ -165,15 +178,37 @@
                         try {
                           game.chunkGrid[game.player.chunk.x][game.player.chunk.z+8].unload();
                         } catch (e){};
+                        //preview along x axis
+                        for(var x0 = game.player.chunk.x; x0 < 8; x0++){
+                          for(var y0 = -8; y0 < 8; y0++){
+                            if(game.getBlock(x0, y0, game.player.chunk.z-1)) game.getBlock(x0, y0, game.player.chunk.z-1).load();
+                          };
+                        };
+                        for(var x0 = game.player.chunk.x; x0 < 8; x0++){
+                          for(var y0 = -8; y0 < 8; y0++){
+                            if(game.getBlock(x0, y0, game.player.chunk.z+8)) game.getBlock(x0, y0, game.player.chunk.z+8).load();
+                          };
+                        };
+                        //preview along z axis
+                        for(var z0 = game.player.chunk.z; z0 < 8; z0++){
+                          for(var y0 = -8; y0 < 8; y0++){
+                            if(game.getBlock(game.player.chunk.x-1, y0, z0)) game.getBlock(game.player.chunk.x-1, y0, z0).load();
+                          };
+                        };
+                        for(var z0 = game.player.chunk.z; z0 < 8; z0++){
+                          for(var y0 = -8; y0 < 8; y0++){
+                            if(game.getBlock(game.player.chunk.x+8, y0, z0)) game.getBlock(game.player.chunk.x+8, y0, z0).load();
+                          };
+                        };
                       };
                     };
                     //will return empty object if chunk exists
-                    new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8, Math.floor(game.player.getPosition().position[2]/8)*8);
+                    new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8);
                     if(game.renderMode == 2){
-                      new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8+8, Math.floor(game.player.getPosition().position[2]/8)*8);
-                      new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8-8, Math.floor(game.player.getPosition().position[2]/8)*8);
-                      new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8, Math.floor(game.player.getPosition().position[2]/8)*8+8);
-                      new game.chunk(Math.floor(game.player.getPosition().position[0]/8)*8, Math.floor(game.player.getPosition().position[2]/8)*8-8);
+                      new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8+8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8);
+                      new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8-8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8);
+                      new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8+8);
+                      new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8-8);
                     };
                   };
                   if(game.FPS < 30){
@@ -231,6 +266,7 @@
                 };
                 if(game.UI.debug) {
                   if(game.debug){
+                    game.gridMesh.visible = true;
                     try {
                       var closestEntity = undefined;
                       var closestDistance = Infinity;
@@ -262,6 +298,7 @@
                     };
                   } else {
                     game.UI.debug.style.display = "none";
+                    game.gridMesh.visible = false;
                   }; 
                 };
                 if(game.UI.inventoryGUI && game.UI.inventoryGUI.open){
@@ -274,6 +311,7 @@
                 game.render();
                 game.UI.init();
                 //game.block(0,0,0, "stone");
+                /*
                 game.physics.collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
                 game.physics.dispatcher = new Ammo.btCollisionDispatcher(game.physics.collisionConfiguration);
                 game.physics.overlappingPairCache = new Ammo.btDbvtBroadphase();
@@ -281,6 +319,10 @@
                 game.physics.physicsWorld = new Ammo.btDiscreteDynamicsWorld(game.physics.dispatcher, game.physics.overlappingPairCache, game.physics.solver, game.physics.collisionConfiguration);
                 game.physics.physicsWorld.setGravity(new Ammo.btVector3(0, -9.81, 0));
                 game.physics.tmpTrans = new Ammo.btTransform();
+                */
+                game.physics.world = new CANNON.World();
+                game.physics.world.gravity.y = -9.81;
+                game.physics.world.solver.iterations = 1;
                 //game.generation.generate();
                 game.entityPhysics();
                 game.startFPS();
@@ -295,7 +337,8 @@
                   setTimeout(function (){
                     game.UI.consoleMessage("");
                     game.UI.consoleMessage("Hello there, Player!");
-                    if(!game.generation.sword){
+                    if(!game.generation.items){
+                      new game.item("wood_pickaxe", game.player.inventory, 1);
                       new game.item("stone", game.player.inventory, 20);
                       new game.item("planks", game.player.inventory, 20);
                       new game.item("plant", game.player.inventory, 20);
@@ -305,14 +348,7 @@
                       new game.item("stonebricks", game.player.inventory, 20);
                       new game.item("dirt", game.player.inventory, 20);
                     } else {
-                      new game.item("sword", game.player.inventory, 1);
-                      new game.item("stone", game.player.inventory, 20);
-                      new game.item("planks", game.player.inventory, 20);
-                      new game.item("plant", game.player.inventory, 20);
-                      new game.item("wood", game.player.inventory, 20);
-                      new game.item("mud", game.player.inventory, 20);
-                      new game.item("bricks", game.player.inventory, 20);
-                      new game.item("stonebricks", game.player.inventory, 20);
+                      
                     };
                   }, 1000);
                 };
@@ -384,7 +420,6 @@
             };
             window.onload = function (){
                 console.log("BlockBuilder3D "+game.version+" running on "+navigator.platform);
-                Ammo();
             };
         </script>
         <script src="js/block.js"></script>
