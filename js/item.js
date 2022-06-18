@@ -34,8 +34,9 @@ game.item = class {
           delete this_[i];
       };
     };
-    this.use = function () {
-      this.amount -= 1;
+    this.use = function (amount) {
+      if(!amount) amount = 1;
+      this.amount -= amount;
       if(this.amount <= 0) {
         this.delete();
       };
@@ -115,7 +116,7 @@ game.inventory = class {
     };
     this.dropAll = function(nothrow){
       for(let i = 1; i < this.maxSlots+1; i++){
-        if(this_.slots[i]){
+        if(this_.slots[i] && this_.slots[i].drop){
           var amount = this_.slots[i].amount;
           //for(var a = 0; a < amount; a++){
             this_.slots[i].drop(true, nothrow);
@@ -128,6 +129,16 @@ game.inventory = class {
       for(var i in this_){
           delete this_[i];
       };
+    };
+    this.getItem = function (type, amount){
+      var item_ = false;
+      if(!amount) amount = 1;
+      Object.values(this.slots).forEach(function (item){
+        if(item && item.type == type && item.amount >= amount) {
+          item_ = item;
+        };
+      });
+      return item_;
     };
   };
 };

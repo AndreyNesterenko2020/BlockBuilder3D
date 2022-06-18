@@ -1,4 +1,17 @@
 game.UI.slots = [];
+//recipes
+game.UI.recipes = {
+  planks: {amount: 2, recipe: [["wood", 1]], screenName: "planks"},
+  stick: {amount: 4, recipe: [["planks", 1]], screenName: "stick"},
+  wood_pickaxe: {amount: 1, recipe: [["stick", 2], ["planks", 3]], screenName: "wooden pickaxe"},
+  stone_pickaxe: {amount: 1, recipe: [["stick", 2], ["stone", 3]], screenName: "stone pickaxe"},
+  pickaxe: {amount: 1, recipe: [["stick", 2], ["iron", 3]], screenName: "iron pickaxe"},
+  sword: {amount: 1, recipe: [["stick", 1], ["iron", 2]], screenName: "iron sword"},
+  bucket: {amount: 1, recipe: [["iron", 3]], screenName: "bucket"},
+  diamond_apple: {amount: 1, recipe: [["diamond", 2], ["apple", 1]], screenName: "diamond apple"},
+  diamond_block: {amount: 1, recipe: [["diamond", 9]], screenName: "diamond block"},
+  diamond: {amount: 9, recipe: [["diamond_block", 1]], screenName: "diamond"},
+};
 game.UI.commands = {
   //5 PARAMETERS MAX
   help: function (a){
@@ -203,7 +216,18 @@ game.UI.commands = {
     game.refreshChunks();
     return "Refreshed all chunks.";
   },
+  xray: function (block) {
+    game.loadedBlocks.forEach(function (block_) {
+      if(block_.block.type == block) {
+        block_.visible = true;
+      } else {
+        block_.visible = false;
+      };
+    });
+    return "xraying for "+block+".";
+  },
 };
+game.UI.nonCheats = ["xray", "refresh", "help"];
 game.UI.selection = "Stone";
 game.UI.respawn = function (){
   if(!game.generation.respawn)return "no cheating death allowed. sorry.";
@@ -339,12 +363,22 @@ game.UI.init = function (){
     game.UI.inventoryGUI.style.left = "16.65%";
     game.UI.inventoryGUI.style.top = "5%";
     game.UI.inventoryGUI.style.width = "66.6%";
-    game.UI.inventoryGUI.style.height = "70%";
+    game.UI.inventoryGUI.style.height = "90%";
     game.UI.inventoryGUI.style.position = "fixed";
     game.UI.inventoryGUI.style.border = "solid black 10px";
     game.UI.inventoryGUI.style.backgroundColor = "white";
     game.UI.inventoryGUI.style.textAlign = "center";
-    game.UI.inventoryGUI.innerHTML = "<h1>Inventory</h1><h2>Backpack</h2>";
+    game.UI.inventoryGUI.innerHTML = "<h1>Crafting</h1>";
+    game.UI.craftingGUI = document.createElement("div");
+    game.UI.craftingGUI.style.width = "90%";
+    game.UI.craftingGUI.style.marginLeft = "5%";
+    game.UI.craftingGUI.style.height = "20%";
+    game.UI.craftingGUI.style.border = "solid black 7px";
+    game.UI.craftingGUI.style.overflow = "scroll";
+    game.UI.craftingGUI.style.backgroundColor = "white";
+    game.UI.craftingGUI.id = "craftingGUI";
+    game.UI.inventoryGUI.appendChild(game.UI.craftingGUI);
+    game.UI.inventoryGUI.innerHTML += "<h1>Inventory</h1><h2>Backpack</h2>";
     game.UI.inventoryGUI.style.display = "none";
     game.UI.inventoryGUI.open = false;
     game.UI.inventoryGUI.id = "inventoryGUI";
@@ -355,6 +389,16 @@ game.UI.init = function (){
     game.UI.inventoryGUI.appendChild(h2);
     h2.innerHTML = "Toolbar";
     for(var i = 1; i < 7; i ++) game.UI.slot(i);
+    game.UI.diamondOverlay = document.createElement("div");
+    game.UI.diamondOverlay.style.position = "fixed";
+    game.UI.diamondOverlay.style.width = "100%";
+    game.UI.diamondOverlay.style.height = "100%";
+    game.UI.diamondOverlay.style.backgroundColor = "blue";
+    game.UI.diamondOverlay.style.pointerEvents = "none";
+    game.UI.diamondOverlay.style.top = 0;
+    game.UI.diamondOverlay.style.opacity = 0.3;
+    game.UI.diamondOverlay.style.display = "none";
+    document.body.appendChild(game.UI.diamondOverlay);
 };
 game.UI.consoleMessage = function (message){
   document.getElementById("console_output").innerHTML += "<br>"+message;
@@ -503,6 +547,7 @@ game.UI.toggleInventory = function () {
   };
   game.UI.first = undefined;
   game.UI.second = undefined;
+  game.UI.updateRecipes();
   if(game.UI.inventoryGUI.open){
     game.UI.closeInventory();
   } else {
@@ -519,8 +564,8 @@ game.UI.slot = function (id) {
   slot.style.backgroundSize = "100% 100%";
   slot.style.textAlign = "right";
   slot.style.float = "left";
-  slot.style.width = "14%";
-  slot.style.height = "22%";
+  slot.style.width = "15%";
+  slot.style.height = "14%";
   slot.style.margin = "0.1%";
   game.UI.inventoryGUI.appendChild(slot);
   slot.id = "slot"+id;
@@ -556,6 +601,9 @@ game.UI.slot = function (id) {
 game.UI.updateSlots = function () {
   game.UI.slots.forEach(function (slot) {
     try {
+      if(!game.player.inventory.slots[slot.id.split("slot")[1]].type) {
+        game.player.inventory.slots[slot.id.split("slot")[1]] = null;
+      };
       slot.style.backgroundImage = "url(textures/"+game.player.inventory.slots[slot.id.split("slot")[1]].type+".png)";
       slot.innerHTML = "<h1 style='pointer-events:none'>"+game.player.inventory.slots[slot.id.split("slot")[1]].amount+"</h1>";
       slot.title = game.player.inventory.slots[slot.id.split("slot")[1]].type;
@@ -566,12 +614,80 @@ game.UI.updateSlots = function () {
     };
   });
 };
+game.UI.alert = function (text) {
+    var notice = document.createElement("div");
+    notice.style.position = "fixed";
+    notice.style.top = "50%";
+    notice.style.left = "45%";
+    notice.innerHTML = "<h1>"+text+"<h1>"
+    notice.style.opacity = 0;
+    notice.style.transition = "all 0.5s";
+    document.body.appendChild(notice);
+    setTimeout(function (){
+      notice.style.opacity = 1;
+      notice.style.top = "40%";
+    },10);
+    setTimeout(function (){
+      notice.style.opacity = 0;
+    },1000);
+    setTimeout(function (){
+      notice.outerHTML = "";
+    },2000);
+};
+game.UI.craft = function (item) {
+  var check = true;
+  var items = [];
+  game.UI.recipes[item].recipe.forEach(function (item) {
+    if(game.player.inventory.getItem(item[0], item[1])){
+      items.push([game.player.inventory.getItem(item[0], item[1]), item[1]]);
+    } else {
+      check = false;
+    };
+  });
+  if(check) {
+    items.forEach(function (item) {
+      item[0].use(item[1]);
+    });
+    new game.item(item, game.player.inventory, game.UI.recipes[item].amount);
+    game.UI.updateRecipes();
+    game.UI.alert("Crafted "+item);
+  } else {
+    game.UI.alert("Not enough items!");
+  };
+};
+game.UI.updateRecipes = function () {
+  document.getElementById("craftingGUI").innerHTML = "";
+  document.getElementById("craftingGUI").innerHTML = "<h2>Looks like you haven't unlocked any recipes... Break a piece of wood to start!</h2>";
+  Object.values(game.UI.recipes).forEach(function (recipe, index) {
+    var unlocked = false;
+    recipe.recipe.forEach(function (item) {
+      if(game.player.inventory.getItem(item[0])){
+        unlocked = true;
+      };
+    });
+    if(!unlocked) return;
+    var result = "";
+    var plus = "";
+    recipe.recipe.forEach(function (item) {
+      result += plus+"<img src='textures/"+item[0]+".png' height='25'>"+item[0]+" x"+item[1];
+      plus = " + ";
+    });
+    if(document.getElementById("craftingGUI").innerHTML == "<h2>Looks like you haven't unlocked any recipes... Break a piece of wood to start!</h2>") {
+      document.getElementById("craftingGUI").innerHTML = "";
+    };
+    document.getElementById("craftingGUI").innerHTML += "<div class='hover' style='border: solid black 5px; width: 100%; font-size: 200%; background-color: white;' onclick='game.UI.craft(`"+Object.keys(game.UI.recipes)[index]+"`)'>"+result+" = "+"<img src='textures/"+Object.keys(game.UI.recipes)[index]+".png' height='20'>"+Object.values(game.UI.recipes)[index].screenName+" x"+Object.values(game.UI.recipes)[index].amount+"</div>";
+  });
+};
 document.body.style.fontFamily = "BlockBuilder3D";
 document.body.addEventListener("keydown", function(event) {
     if(event.keyCode == 13){
       game.UI.consoleMessage(document.getElementById("console_input").value);
       try{
-        game.UI.consoleMessage(eval("game.UI.commands."+document.getElementById("console_input").value.split("/")[1].split(" ")[0]+"('"+document.getElementById("console_input").value.split(document.getElementById("console_input").value.split(" ")[0])[1].split(" ")[1].replace(";", "','").replace(";", "','").replace(";", "','").replace(";", "','")+"')"));
+        if(game.UI.nonCheats.indexOf(document.getElementById("console_input").value.split("/")[1].split(" ")[0]) != -1 || game.generation.cheats) {
+          game.UI.consoleMessage(eval("game.UI.commands."+document.getElementById("console_input").value.split("/")[1].split(" ")[0]+"('"+document.getElementById("console_input").value.split(document.getElementById("console_input").value.split(" ")[0])[1].split(" ")[1].replace(";", "','").replace(";", "','").replace(";", "','").replace(";", "','")+"')"));
+        } else {
+          game.UI.consoleMessage("Cheats are disabled in this world.");
+        };
       } catch (error) {
         game.UI.consoleMessage("Unknown command. Use /help me for help.");
         if(game.debug){
@@ -598,6 +714,7 @@ document.body.addEventListener("keydown", function(event) {
       game.player.playAnimation("handAction");
       setTimeout(function(){game.player.playAnimation("handAction", 1, 0)}, 250);
     };
+    if(game.UI.inventoryGUI.open) return;
     if(isNaN(Number(event.key)) == false && Number(event.key) != 0){
       if(event.key > 6){
         return;
@@ -617,11 +734,15 @@ document.body.addEventListener("keydown", function(event) {
     };
 });
 document.body.addEventListener("wheel", function(event) {
+  if(game.UI.inventoryGUI.open) return;
   game.player.inventory.selection+=event.deltaY/Math.abs(event.deltaY);
   if(game.player.inventory.selection < 1){
     game.player.inventory.selection = 6;
   };
   if(game.player.inventory.selection > 6){
+    game.player.inventory.selection = 1;
+  };
+  if(isNaN(game.player.inventory.selection)){
     game.player.inventory.selection = 1;
   };
   for(var loop = 0; loop <= 5; loop++){

@@ -166,6 +166,7 @@ game.block = class {
     this.oncreate = game.blockTypes[this.type][2];
     this.onbreak = game.blockTypes[this.type][3];
     this.hardness = game.blockTypes[this.type][4];
+    this.requiredItem = game.blockTypes[this.type][5];
     this.delete = function (noaudio) {
       if(game.loadedBlocks.indexOf(this.block) != -1) {
         game.loadedBlocks.splice(game.loadedBlocks.indexOf(this.block), 1);
@@ -335,10 +336,20 @@ game.whilemousedown = function(event) {
         if(game.player.inventory.slots[game.player.inventory.selection] && game.player.inventory.slots[game.player.inventory.selection].miningExceptions[intersects[0].object.block.type]){
           intersects[0].object.block.break += game.player.inventory.slots[game.player.inventory.selection].miningExceptions[intersects[0].object.block.type];
         } else {
-          intersects[0].object.block.break += 0.1;
+          if(game.gamemode == 0) {
+            intersects[0].object.block.break += 0.1;
+          } else if(game.gamemode == 1){
+            intersects[0].object.block.break += Infinity;
+          }
         };
         if(intersects[0].object.block.break >= intersects[0].object.block.hardness){
-          intersects[0].object.block.inventory.dropAll(true);
+          if(game.player.inventory && !game.player.inventory.slots[game.player.inventory.selection]) {
+            if(intersects[0].object.block.requiredItem[0] == "*") {
+              intersects[0].object.block.inventory.dropAll(true);
+            };
+          } else if(game.player.inventory && (intersects[0].object.block.requiredItem.indexOf(game.player.inventory.slots[game.player.inventory.selection].type) != -1) || intersects[0].object.block.requiredItem[0] == "*") {
+            intersects[0].object.block.inventory.dropAll(true);
+          };
           intersects[0].object.block.delete();
         };
         game.UI.sound(intersects[0].object.block.type+Math.round(Math.random()*2+1), 0.5);

@@ -1,18 +1,26 @@
 game.generation.top = 0;
 game.generation.size = 8;
-game.generation.layer = function (type, thickness, width, x, z, top, ore, orechance) {
+game.generation.layer = function (type, thickness, width, x, z, top) {
   for(y = top; y <= top+thickness-1; y++){
     for(x0 = x; x0 <= x+width-1; x0++){
       for(z0 = z; z0 <= z+width-1; z0++){
-        if(Math.random()*100 > orechance) {
-          new game.block(x0, y, z0, ore);
-        } else {
-          new game.block(x0, y, z0, type);
-        };
+        new game.block(x0, y, z0, type);
       };
     };
   };
   game.generation.top += thickness;
+};
+game.generation.oreDistribution = function (type, thickness, width, x, z, top, chance) {
+  for(y = top; y <= top+thickness-1; y++){
+    for(x0 = x; x0 <= x+width-1; x0++){
+      for(z0 = z; z0 <= z+width-1; z0++){
+        if(Math.random()*100 > chance) {
+          if(game.getBlock(x0, y, z0)) game.getBlock(x0, y, z0).delete(true);
+          new game.block(x0, y, z0, type);
+        };
+      };
+    };
+  }; 
 };
 game.generation.barrier = function (width, height) {
   for(y = 0; y <= height; y++){
@@ -63,10 +71,15 @@ game.generation.tree = function(x, y, z) {
 game.generation.generate = function (x, z) {
   var size = game.generation.size;
   if(game.generation.mode == 2){
-    game.generation.layer("world_barrier", 1, size, x, z, -5, "fat", 99);
-    game.generation.layer("lava", 1, size, x, z, -4, undefined, Infinity);
-    game.generation.layer("stone", 3, size, x, z, -3, "iron_ore", 90);
-    game.generation.layer("plant", 1, size, x, z, 0, undefined, Infinity);
+    game.generation.layer("world_barrier", 1, size, x, z, -5);
+    game.generation.layer("lava", 1, size, x, z, -4);
+    game.generation.layer("stone", 1, size, x, z, -3);
+    game.generation.layer("stone", 2, size, x, z, -2);
+    game.generation.layer("plant", 1, size, x, z, 0);
+    //type, thickness, width, x, z, top, chance
+    game.generation.oreDistribution("fat", 1, 8, x, z, -3, 99);
+    game.generation.oreDistribution("iron_ore", 3, 8, x, z, -3, 90);
+    game.generation.oreDistribution("diamond_ore", 3, 8, x, z, -3, 95);
   };
   if(game.generation.mode == 1){
     game.generation.layer("world_barrier", 1, size, x, z, -1, "fat", 99);

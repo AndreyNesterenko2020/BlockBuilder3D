@@ -13,7 +13,7 @@ game.entityTypes = {
       };
       var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
-      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
       if(intersects[0] != undefined && intersects[0].distance < 1.5){
         this_.jump();
@@ -73,7 +73,7 @@ game.entityTypes = {
       this.playAnimation("death");
       setTimeout(this.delete, 2000);
     },1.5, 2, 3, [1, 1, 1], true],
-  bull: [50,25,[2.5,1.75,1.25], function(){
+  bull: [50,28,[2.5,1.75,1.25], function(){
     new game.inventory(this, 1);
     if(!this.inventory.slots[1]) {
       new game.item("meat", this.inventory);
@@ -88,7 +88,7 @@ game.entityTypes = {
       };
       var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
-      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
       if(intersects[0] != undefined && intersects[0].distance < 1.5){
         this_.jump();
@@ -121,7 +121,7 @@ game.entityTypes = {
               };
             };
             var raycaster = new THREE.Raycaster();
-            raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxCombat.quaternion), 0, Infinity);
+            raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
             var intersects = raycaster.intersectObjects(objects);
             if(intersects[0]){
               if(intersects[0].object.entity.type == "player") {
@@ -216,7 +216,7 @@ game.entityTypes = {
       };
       var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
-      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
       if(intersects[0] != undefined && intersects[0].distance < 0.45){
         this_.jump();
@@ -270,7 +270,7 @@ game.entityTypes = {
       setTimeout(this.delete, 2000);
     },2, 2, 3, [1, 1, 1], true],
   player: [100,1,[0.6,1.95,0.6], function(){
-    new game.inventory(this, 18, function(item, amount){game.UI.itemPickedUp(item, amount)});
+    new game.inventory(this, 18);
     this.entityData.handActionCooldown = false;
     this.entityData.attackCooldown = false;
     if(!game.player) game.player = this;
@@ -282,6 +282,11 @@ game.entityTypes = {
     walk.muted = true;
     fire.loop = true;
     fire.muted = true;
+    this_.inventory.onpickup = function(item, amount){game.UI.itemPickedUp(item, amount); game.UI.updateRecipes();};
+    this_.entityData.walkSpeed = this_.movementSpeed;
+    this_.entityData.walkLavaSpeed = 0.5;
+    this_.entityData.jumpHeight = this_.jumpHeight;
+    this_.entityData.jumpLavaHeight = 0.75;
     this_.entityData.lastAttacker = {name: "void"};
     game.renderer.domElement.addEventListener("mousedown", function (event){
       if(this_.health == 0 || this_[0] == "deleted" || game.controls.PointerLock.isLocked == false){
@@ -292,7 +297,7 @@ game.entityTypes = {
       };
       if(!this_.entityData.handActionCooldown){
         this_.entityData.handActionCooldown = true;
-        if(this_.inventory.slots[this_.inventory.selection] && this_.inventory.slots[this_.inventory.selection].type == "sword") {
+        if(this_.inventory.slots[this_.inventory.selection] && (this_.inventory.slots[this_.inventory.selection].type == "sword" || this_.inventory.slots[this_.inventory.selection].type == "iron_axe")) {
           this_.stopAnimations();
           this_.playAnimation("sword", 1);
           setTimeout(function(){this_.playAnimation("sword", 1, 0)}, 500);
@@ -304,6 +309,7 @@ game.entityTypes = {
           setTimeout(function(){this_.entityData.handActionCooldown = false}, 100);
         };
       };
+      if(event.which == 3) return;
       var result = this_.attack();
       if(result && result.health > 0) {
         game.UI.sound("attack"+Math.round(Math.random()*2+1));
@@ -406,9 +412,10 @@ game.entityTypes = {
       if(this_.health <= 0){
         return;
       };
-      this_.health += 2;
-      setTimeout(healLoop, 2000);
+      this_.health += 1;
+      setTimeout(healLoop, 5000);
     };
+    //burn in lava
     function fireDetect () {
       if(this_.health <= 0) {
         return;
@@ -418,33 +425,50 @@ game.entityTypes = {
           this_.entityData.lastAttacker = {name: "lava"};
           this_.health -= 10;
           game.UI.sound("damage"+Math.round(Math.random()*2+1));
-          this_.jumpHeight = 0.75;
-          this_.movementSpeed = 0.5;
+          this_.jumpHeight = this_.entityData.jumpLavaHeight;
+          this_.movementSpeed = this_.entityData.walkLavaSpeed;
           game.UI.fire.style.display = "block";
           fire.muted = false;
         };
       } else {
         fire.muted = true;
-        this_.movementSpeed = game.entityTypes.player[6];
-          this_.jumpHeight = game.entityTypes.player[8];
-          game.UI.fire.style.display = "none";
+        this_.movementSpeed = this_.entityData.walkSpeed;
+        this_.jumpHeight = this_.entityData.jumpHeight;
+        game.UI.fire.style.display = "none";
       };
       if(game.getBlock(Math.round(this_.getPosition().position[0]), Math.round(this_.getPosition().position[1]-1), Math.round(this_.getPosition().position[2]))) {
         if(game.getBlock(Math.round(this_.getPosition().position[0]), Math.round(this_.getPosition().position[1]-1), Math.round(this_.getPosition().position[2])).type == "lava") {
           this_.entityData.lastAttacker = {name: "lava"};
           this_.health -= 10;
           game.UI.sound("damage"+Math.round(Math.random()*2+1));
-          this_.jumpHeight = 0.75;
-          this_.movementSpeed = 0.5;
+          this_.jumpHeight = this_.entityData.jumpLavaHeight;
+          this_.movementSpeed = this_.entityData.walkLavaSpeed;
           game.UI.fire.style.display = "block";
           fire.muted = false;
         };
       } else {
         fire.muted = true;
-        this_.movementSpeed = game.entityTypes.player[6];
-          this_.jumpHeight = game.entityTypes.player[8];
-          game.UI.fire.style.display = "none";
+        this_.movementSpeed = this_.entityData.walkSpeed;
+        this_.jumpHeight = this_.entityData.jumpHeight;
+        game.UI.fire.style.display = "none";
       };
+      /*if(game.getBlock(Math.round(this_.getPosition().position[0]), Math.round(this_.getPosition().position[1]+1), Math.round(this_.getPosition().position[2]))) {
+        if(game.getBlock(Math.round(this_.getPosition().position[0]), Math.round(this_.getPosition().position[1]+1), Math.round(this_.getPosition().position[2])).type == "lava") {
+          this_.entityData.lastAttacker = {name: "lava"};
+          this_.health -= 10;
+          game.UI.sound("damage"+Math.round(Math.random()*2+1));
+          this_.jumpHeight = this_.entityData.jumpLavaHeight;
+          this_.movementSpeed = this_.entityData.walkLavaSpeed;
+          game.UI.fire.style.display = "block";
+          fire.muted = false;
+        };
+      } else {
+        fire.muted = true;
+        this_.movementSpeed = this_.entityData.walkSpeed;
+        this_.jumpHeight = this_.entityData.jumpHeight;
+        game.UI.fire.style.display = "none";
+      };
+      */
       setTimeout(fireDetect, 500);
     };
     setTimeout(fireDetect, 100);
@@ -452,10 +476,10 @@ game.entityTypes = {
     healLoop();
   },
   function (entity){
-    this.entityData.lastAttacker = entity;
+    this.entityData.lastAttacker = {name: entity.name, health: entity.health, type: entity.type};
     var this_ = this;
     setTimeout(function(){
-      if(this_.entityData.lastAttacker == entity) {
+      if(this_.entityData.lastAttacker.name == entity.name && this_.entityData.lastAttacker.type == entity.type) {
         this_.entityData.lastAttacker = {name: "void"};
       };
     }, 7000);
@@ -543,7 +567,7 @@ game.entityTypes = {
       setTimeout(walkLoop, 100);
   }, function(){game.UI.sound("tony"+Math.floor(Math.random()*4+1));this.jump();}, function(){game.controls.PointerLock.unlock(); this.inventory.dropAll(); game.UI.sound("tony1"); this.delete(); game.generation.respawn = false; for(var i=0;i<20;i++)game.UI.consoleMessage("what have you done"); game.AmbientLight.color.g=0;game.AmbientLight.color.b=0; function a(){game.AmbientLight.color.r+=0.5; game.UI.lock.style.opacity = "1"; game.UI.lock.innerHTML = "he is coming"}; a();
   }, 2, 1, 3, [1,1,1], true],
-  chicken: [20, 15, [0.9, 0.8, 0.6], function(){
+  chicken: [20, 3, [0.9, 0.8, 0.6], function(){
     var this_ = this;
     new game.inventory(this, 1);
     if(!this.inventory.slots[1]) {
@@ -554,7 +578,7 @@ game.entityTypes = {
       if(this_.health <= 0) return;
       var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
-      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
       if(intersects[0] != undefined && intersects[0].distance < 1.5){
         this_.jump();
@@ -606,7 +630,7 @@ game.entityTypes = {
     setTimeout(animLoop, 100);
     setTimeout(healLoop, 100);
   }, function(){
-    this.hitboxPhysics.velocity.y = 1;
+    this.hitboxPhysics.velocity.y = 2;
     game.UI.sound("chicken"+Math.round(Math.random()*2+1));
     if(!game.roosterAnger){
       game.UI.sound("rooster_anger");
@@ -618,10 +642,11 @@ game.entityTypes = {
     this.inventory.delete();
     this.playAnimation("death");
     setTimeout(this.delete, 2000);
-  }, 2, 1, 5, [1,1,1], true],
-  rooster: [20, 10, [0.9, 0.8, 0.6], function(){
+  }, 2.5, 1, 5, [1,1,1], true],
+  rooster: [20, 3, [0.9, 0.8, 0.6], function(){
     var this_ = this;
     var attack = true;
+    game.roosterThrowOff = false;
     new game.inventory(this, 1);
     if(!this.inventory.slots[1]) {
       new game.item("chicken", this.inventory);
@@ -631,10 +656,14 @@ game.entityTypes = {
       if(this_.health <= 0) return;
       var objects = Object.values(game.loadedBlocks);
       var raycaster = new THREE.Raycaster();
-      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0), 0, Infinity);
+      raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
       var intersects = raycaster.intersectObjects(objects);
       if(intersects[0] != undefined && intersects[0].distance < 1.5){
         this_.jump();
+        this_.playAnimation("flap");
+        setTimeout(function (){
+          this_.playAnimation("flap", 1, 0);
+        }, 300);
       };
       if(!game.roosterAnger) {
         this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
@@ -649,28 +678,56 @@ game.entityTypes = {
             };
           };
           var raycaster = new THREE.Raycaster();
-          raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxCombat.quaternion), 0, Infinity);
+          raycaster.set(this_.object.position, new THREE.Vector3(1, 0, 0).applyQuaternion(this_.hitboxDirection.quaternion), 0, Infinity);
           var intersects = raycaster.intersectObjects(objects);
           if(intersects[0]){
             if(intersects[0].object.entity.type == "player" && attack) {
               attack = false;
               var result = this_.attack();
-              this_.animations[2] = 0;
               this_.playAnimation("peck");
-              setTimeout(function(){this_.playAnimation("peck", 1, 0), 100});
+              setTimeout(function(){this_.playAnimation("peck", 1, 0), 500});
               if(game.player.health <= 0){
-                game.bullAnger = false;
+                game.roosterAnger = false;
+                attack = true;
                 walkLoop();
                 return;
               };
-              setTimeout(function (){attack = true}, 500);
+              setTimeout(function (){attack = true}, 250);
             };
           };
         } catch (error) {
           game.roosterAnger = false;
           attack = true;
         };
-        setTimeout(walkLoop, 10);
+        try {
+          if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]+1) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+            game.roosterThrowOff = true;
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+          };
+          if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]+2) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+            game.roosterThrowOff = true;
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+          };
+          if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]-1) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+            game.roosterThrowOff = true;
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+          };
+          if(Math.round(game.player.getPosition().position[0]) == Math.round(this_.getPosition().position[0]) && Math.round(game.player.getPosition().position[1]) == Math.round(this_.getPosition().position[1]-2) && Math.round(game.player.getPosition().position[2]) == Math.round(this_.getPosition().position[2])) {
+            game.roosterThrowOff = true;
+            this_.setPosition(this_.getPosition().position, Math.round(Math.random()*360));
+          };
+        } catch (e) {
+          game.roosterThrowOff = true;
+        };
+        if(game.roosterThrowOff) {
+            setTimeout(walkLoop, 1000);
+        } else {
+          if(game.roosterAnger) {
+            setTimeout(walkLoop, 100);
+          } else {
+            setTimeout(walkLoop, Math.random()*2000);
+          }
+        }
       };
     };
     function animLoop(){
@@ -701,5 +758,5 @@ game.entityTypes = {
     this.inventory.delete();
     this.playAnimation("death");
     setTimeout(this.delete, 2000);
-  }, 2, 1, 5, [1,1,1], true],
+  }, 3, 1, 5, [1,1,1], true],
 };
