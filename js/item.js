@@ -7,13 +7,18 @@ game.item = class {
     if(!amount) {
       amount = 1;
     };
+    this.maxStack = game.itemTypes[this.type][8]
     this.amount = amount;
     this.inventory = inventory;
     this.heldTexture = game.itemTypes[this.type][6];
     this.miningExceptions = game.itemTypes[this.type][7];
     var this_ = this;
+    if(this.amount > this.maxStack) {
+      new game.item(type, inventory, this.amount-this.maxStack, true);
+      this.amount = this.maxStack;
+    };
     for(var i = 1; i < inventory.maxSlots+1; i++){
-      if(inventory.slots[i] && inventory.slots[i].type == this.type){
+      if(inventory.slots[i] && inventory.slots[i].type == this.type && inventory.slots[i].amount + this.amount <= inventory.slots[i].maxStack){
         inventory.slots[i].amount += this.amount;
         return;
       };

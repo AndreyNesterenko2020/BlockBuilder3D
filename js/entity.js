@@ -131,6 +131,7 @@ game.entity = class {
       this.ondamage = game.entityTypes[type][4];
       this.ondeath = game.entityTypes[type][5];
     };
+    this.ontick = function(){};
     this.stoppingAnimations = false;
     this.movement = [0, 0, 0, 0];
     this.movementSpeed = game.entityTypes[type][6];
@@ -158,8 +159,7 @@ game.entity = class {
       body.setActivationState(4);
       game.physics.physicsWorld.addRigidBody(body); 
       */
-      if(!game.entityMaterial) game.entityMaterial = new CANNON.Material; game.entityMaterial.friction = 10;
-      var body = new CANNON.Body({mass: 1, material: game.entityMaterial});
+      var body = new CANNON.Body({mass: 1});
       body.angularDamping = 1;
       body.addShape(new CANNON.Box(new CANNON.Vec3(game.entityTypes[this_.type][2][0]/2, game.entityTypes[this_.type][2][1]/2, game.entityTypes[this_.type][2][2]/2)));
       body.position.set(this_.spawnPosition[0], this_.spawnPosition[1], this_.spawnPosition[2]);
@@ -236,6 +236,17 @@ game.entity = class {
         this_.hitboxPhysics.position = new CANNON.Vec3(pos[0], pos[1], pos[2]);
         this_.hitboxPhysics.quaternion.set(game.eulerQuaternion(rot)[0], game.eulerQuaternion(rot)[1], game.eulerQuaternion(rot)[2], game.eulerQuaternion(rot)[3]);
       };
+      this_.setRotation = function(rot) {
+        if(rot == undefined){
+          rot = [0, 0, 0];
+        };
+        if(typeof rot == "number"){
+          rot = [0, rot, 0];
+        };
+        this_.readOnlyRotation = game.eulerQuaternion(rot);
+        rot = [rot[0]*this_.hitboxAngularFactor[0], rot[1]*this_.hitboxAngularFactor[1], rot[2]*this_.hitboxAngularFactor[2]];
+        this_.hitboxPhysics.quaternion.set(game.eulerQuaternion(rot)[0], game.eulerQuaternion(rot)[1], game.eulerQuaternion(rot)[2], game.eulerQuaternion(rot)[3]);
+      };
       this_.getPosition = function() {
         return({position: [this_.hitboxCombat.position.x, this_.hitboxCombat.position.y, this_.hitboxCombat.position.z], rotation: game.quaternionEuler(this_.hitboxDirection.quaternion)});
       };
@@ -268,7 +279,7 @@ game.entity = class {
         if(onlyY) {
           rot = [0, rot[1], 0];
         };
-        this_.setPosition(this_.getPosition().position, rot);
+        this_.setRotation(rot);
         game.scene.remove(obj);
       };
       this_.delete = function () {
@@ -362,6 +373,8 @@ game.entityPhysics = function(){
         if(game.entities[i].movement[3] < 0){
           game.entities[i].movement[3] = 0;
         };
+        //my gravity
+        game.entities[i].hitboxPhysics.velocity.y -= 0.09;
         let objThree = game.entities[i].object;
         let objAmmo = game.entities[i].hitboxPhysics;
         //let motion = objAmmo.getMotionState();
@@ -399,5 +412,6 @@ game.entityPhysics = function(){
         if(game.entities[i].getPosition().position[1] <= -128){
           game.entities[i].delete();
         };
+        game.entities[i].ontick();
     };
 };

@@ -31,14 +31,29 @@ game.blockSave = function () {
   var data = [];
   Object.values(game.blockObjects).forEach(function (block) {
     if(block[0]) return;
-    data.push({type: block.type, x: block.block.position.x, y: block.block.position.y, z: block.block.position.z});
+    var inventory = false;
+    if(!!block.inventory){
+      inventory = [];
+      Object.values(block.inventory.slots).forEach(function (item) {
+        if(!item) return;
+        inventory.push({type: item.type, amount: item.amount, slot: item.slot});
+      });
+    };
+    data.push({type: block.type, x: block.block.position.x, y: block.block.position.y, z: block.block.position.z, hasInventory: !!block.inventory, slots: !!block.inventory&&block.inventory.maxSlots, inventory: inventory});
   });
   return JSON.stringify(data);
 };
 game.blockLoad = function (data) {
   try {
     JSON.parse(data).forEach(function (block){
-      new game.block(block.x, block.y, block.z, block.type, false, true);
+      var block0 = new game.block(block.x, block.y, block.z, block.type, false, true);
+      if(block0.inventory) block0.inventory.delete(true);
+      new game.inventory(block0, block.slots);
+      if(block.hasInventory){
+        block.inventory.forEach(function (item){
+          new game.item(item.type, block0.inventory, item.amount, true);
+        });
+      };
     });
     return true;
   } catch (error) {
@@ -46,12 +61,16 @@ game.blockLoad = function (data) {
   };
 };
 game.block = class {
-  constructor (x,y,z, type, audio, nogeneratechunk) {
+  constructor (x,y,z, type, audio, nogeneratechunk, override) {
     x = Math.round(x);
     y = Math.round(y);
     z = Math.round(z);
     if(game.getBlock(x, y, z)) {
-      return;
+      if(override) {
+        game.getBlock(x, y, z).delete(true);
+      } else {
+        return;
+      };
     };
     this.block = new THREE.Mesh(game.geometry);
     this.breakOverlay = new THREE.Mesh(game.geometry);
@@ -67,25 +86,49 @@ game.block = class {
       return({position:[x-0.5,y,z], rotation:[0, 0, 0]})
     };
     this.type = type.toLowerCase();
-    var test = new Image();
-    test.src = "textures/"+type+".png"
-    var this_ = this;
-    new game.inventory(this, 1);
-    if(game.itemTypes[this.type]){
-      new game.item(this.type, this.inventory);
-    };
-    test.onload = function () {
-      if(!game.materials[type]) {
-        game.materials[this_.type] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+".png")});
-        game.materials[this_.type].transparent = true;
+    if((game.blockTypes[type] && !game.blockTypes[type][6]) || !game.blockTypes[type]) { 
+      var test = new Image();
+      test.src = "textures/"+type+".png"
+      var this_ = this;
+      new game.inventory(this, 1);
+      if(game.itemTypes[this.type]){
+        new game.item(this.type, this.inventory);
       };
-      this_.block.material = game.materials[this_.type];
-      if(!game.blockTypes[type]) {
-        this_.block.material = game.materials.defaultMaterial;;
+      test.onload = function () {
+        if(!game.materials[type]) {
+          game.materials[this_.type] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+".png")});
+          game.materials[this_.type].transparent = true;
+        };
+        this_.block.material = game.materials[this_.type];
+        if(!game.blockTypes[type]) {
+          this_.block.material = game.materials.defaultMaterial;;
+        };
       };
-    };
-    test.onerror = function (){
-      this_.block.material = game.materials.defaultMaterial;
+      test.onerror = function (){
+        this_.block.material = game.materials.defaultMaterial;
+      };
+    } else {
+      var test = new Image();
+      test.src = "textures/"+type+"_positive_x.png"
+      var this_ = this;
+      new game.inventory(this, 1);
+      if(game.itemTypes[this.type]){
+        new game.item(this.type, this.inventory);
+      };
+      test.onload = function () {
+        var materials = [
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_x.png")}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_x.png")}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_y.png")}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_y.png")}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_z.png")}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_z.png")}),
+        ];
+        this_.block.material = materials;
+      };
+      test.onerror = function (){
+        this_.block.material = game.materials.defaultMaterial;
+      };
     };
     if(audio) {
       game.UI.sound(this.type+Math.round(Math.random()*2+1));
@@ -172,18 +215,27 @@ game.block = class {
         game.loadedBlocks.splice(game.loadedBlocks.indexOf(this.block), 1);
       };
       this.block.geometry.dispose();
-      this.block.material.dispose();
+      try {
+        this.block.material.dispose();
+      } catch (e){};
       var particles = [];
       function particleInit(){
         for(let i = 0; i < game.maxBlockParticles; i++){
-          if(this_.block.material == game.defaultMaterial){
-            var material = new THREE.SpriteMaterial({
-              map: game.materials.defaultMaterial.map,
-              side: THREE.DoubleSide,
-            });
+          if(!this_.block.material[0]) {
+            if(this_.block.material == game.defaultMaterial){
+              var material = new THREE.SpriteMaterial({
+                map: game.materials.defaultMaterial.map,
+                side: THREE.DoubleSide,
+              });
+            } else {
+              var material = new THREE.SpriteMaterial({
+                map: this_.block.material.map,
+              });
+            };
           } else {
             var material = new THREE.SpriteMaterial({
-              map: this_.block.material.map,
+              map: this_.block.material[0].map,
+              side: THREE.DoubleSide,
             });
           };
           var particle = new THREE.Sprite(material);
@@ -351,6 +403,7 @@ game.whilemousedown = function(event) {
             intersects[0].object.block.inventory.dropAll(true);
           };
           intersects[0].object.block.delete();
+          game.UI.achievement("Demolition", "Break your first block", "break6.png");
         };
         game.UI.sound(intersects[0].object.block.type+Math.round(Math.random()*2+1), 0.5);
         if(!game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"]) game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"), alphaTest: 0.5});

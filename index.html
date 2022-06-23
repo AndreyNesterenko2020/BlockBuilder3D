@@ -13,7 +13,6 @@
     <head>
         <title>BlockBuilder3D version </title>
         <script src="js/three.js"></script>
-        <script src="js/OrbitControls.js"></script>
         <script src="js/PointerLockControls.js"></script>
         <script src="js/FirstPersonControls.js"></script>
         <script src="js/missing.js"></script>
@@ -28,6 +27,8 @@
             font-family: blockbuilder3D;
             background-color: white;
             position: fixed;
+            background-image: url("textures/button.png");
+            background-size: 100% 100%;
           }
           .worldSelect {
             overflow-y: scroll;
@@ -57,7 +58,7 @@
           }
         </style>
     </head>
-    <body onbeforeunload="return game.save(1)">
+    <body onbeforeunload="if(!game.paused){return game.save(1)}">
     <h1 id="menu" style="height: 100%; width: 100%; position: fixed; top: 0; margin-left: 0px; margin-top: 0px; text-align: center; background-image: url('textures/dirt.png');">
       <br>BLOCK BUILDER 3D
       <button style="top: 40%; left: 33.3%; width: 33.3%" onclick="worldSelect = 'worldSelect'; u = 'upload'; menu = 'menu'; none = 'none'; n = 'new world-'+Math.floor(Math.random()*1000); worldtype = 'worldtype'; worldname = 'worldname'; thin = 'thin'; thick = 'thick'; worldprompt = `<br>BLOCK BUILDER 3D<br><br><br><br>Create World<br><br>Name: <input autocomplete=off id=worldname ></input><br><br><br>World Type: <select id=worldtype><option>thin</option><option>thick</option></select><br><br>Start with items: <input onclick=game.generation.items=!game.generation.items type=checkbox value=false><br><br>Allow cheats: <input onclick=game.generation.cheats=!game.generation.cheats type=checkbox value=false><br><br>Allow respawn: <input onclick=game.generation.respawn=!game.generation.respawn type=checkbox checked=true><br><br><button style='left:47%' onclick='game.world = document.getElementById(worldname).value; if(document.getElementById(worldtype).value == thin) {game.generation.mode = 1;} else if (document.getElementById(worldtype).value == thick){game.generation.mode = 2;}; game.init();'><h1>Create World</h1></button>`; document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<p style='margin-top: 5%'>World Select</p><br><button style='top: 70%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(menu).innerHTML = worldprompt; document.getElementById(worldname).value = n; document.getElementsByClassName(worldSelect)[0].style.display = none;'>create new world</button><button type='file' style='top: 80%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(u).click()'>Upload World</button>`; document.getElementsByClassName('worldSelect')[0].style.display = 'block'; Object.keys(localStorage).forEach(function (world){try{var world0 = document.createElement('button'); world0.style='width: 95%; text-align: center; border: solid black 4px; position: relative'; world0.innerHTML = '<h1>'+world+'<h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world0); world0.onclick=function(){game.init(localStorage[world]);}; var world1 = document.createElement('button'); world1.style='width: 5%; text-align: center; border: solid black 4px; position: relative'; world1.innerHTML = '<h1><img src=textures/trash.png></img></h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world1); world1.onclick=function(){localStorage.removeItem(world); location.reload();}}catch(e){console.log(e)}})"><h1>Play</h1></button>
@@ -69,7 +70,7 @@
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.4.0_beta1",
+                version: "1.4.0",
                 materials: {},
                 blocks: {},
                 blockObjects: {},
@@ -84,6 +85,8 @@
                 fogDistance: 6,
                 renderMode: 1,
                 world: null,
+                paused: false,
+                achievements: [],
             };
             game.scene = new THREE.Scene();
             game.textureLoader = new THREE.TextureLoader();
@@ -95,7 +98,8 @@
             game.geometry = new THREE.BoxGeometry();
             game.materials.defaultMaterial = new THREE.MeshBasicMaterial({map: game.textureLoader.load(missing)});
             game.scene.background = new THREE.Color(0xffffff);
-            game.controls.Orbit = new THREE.OrbitControls(game.camera, game.renderer.domElement);
+            //game.controls.Orbit = new THREE.OrbitControls(game.camera, game.renderer.domElement);
+            //removed
             game.controls.FirstPerson = new THREE.FirstPersonControls(game.camera, game.renderer.domElement);
             game.controls.PointerLock = new THREE.PointerLockControls(game.camera, game.renderer.domElement);
             game.controls.FirstPerson.movementSpeed = 10;
@@ -120,7 +124,9 @@
             }
             game.render = function (){
                 requestAnimationFrame(game.render);
-                game.renderer.render(game.scene, game.camera);
+                if(!game.paused) {
+                  game.renderer.render(game.scene, game.camera);
+                };
                 game.scene.fog.far = game.fogDistance;
                 game.camera.fov = game.FOV;
                 game.camera.updateProjectionMatrix();
@@ -241,15 +247,28 @@
                   document.getElementById("crosshair").style.display = "none";
                 }
                 if(game.controls.selection == "Orbit"){
-                  game.controls.Orbit.enabled = true;
+                  //removed
+                  //game.controls.Orbit.enabled = true;
                 } else {
-                  game.controls.Orbit.enabled = false;
+                  //removed
+                  //game.controls.Orbit.enabled = false;
                 };
                 if(game.controls.selection == "Player"){
                   if(game.controls.PointerLock.isLocked){
-                    game.UI.lock.style.opacity = 0;
+                    game.UI.settings.style.display = "none";
+                    game.paused=false;
+                    window.alreadySaved = false;
+                    game.UI.toolbar.style.display = "block";
+                    game.UI.Health.style.display = "block";
                   } else {
-                    game.UI.lock.style.opacity = 1;
+                    game.UI.settings.style.display = "block";
+                    game.paused=true;
+                    if(!window.alreadySaved) {
+                      game.save(1);
+                      window.alreadySaved = true;
+                    };
+                    game.UI.toolbar.style.display = "none";
+                    game.UI.Health.style.display = "none";
                   };
                   game.controls.PointerLock.enabled = true;
                   document.getElementById("crosshair").style.display = "block";
@@ -257,6 +276,9 @@
                 try{
                   game.UI.inventory.forEach(function (item, index) {
                     try{
+                      if(!game.player.inventory.slots[index+1].type) {
+                        game.player.inventory.slots[index+1] = null;
+                      };
                       item.style.backgroundImage = "url(textures/"+game.player.inventory.slots[index+1].type+".png)";
                       item.innerHTML = "<h2>"+game.player.inventory.slots[index+1].amount+"</h2>";
                     } catch(e){
@@ -308,6 +330,9 @@
                   game.UI.updateSlots();
                 };
                 scrollTo(0,0);
+                if(game.bullAnger && game.roosterAnger) {
+                  game.UI.achievement("Universal Anger", "Aggravate both Bulls and Roosters", "anger.png");
+                };
             };
             game.init = function(world) {
                 document.title = document.title + " " + game.version;
@@ -324,7 +349,6 @@
                 game.physics.tmpTrans = new Ammo.btTransform();
                 */
                 game.physics.world = new CANNON.World();
-                game.physics.world.gravity.y = -9.81;
                 game.physics.world.solver.iterations = 1;
                 //game.generation.generate();
                 game.entityPhysics();
@@ -358,6 +382,7 @@
                 document.getElementById("menu").style.display = "none";
                 document.getElementsByClassName('worldSelect')[0].style.display = "none";
                 setTimeout(game.saveLoop, 5000);
+                game.controls.PointerLock.lock();
             };
             game.FPS = 0;
             game.startFPS = function() {
@@ -371,7 +396,7 @@
             };
             game.save = function (mode) {
               if(!game.world) return;
-              var WorldData = JSON.stringify({name: game.world, respawn: game.generation.respawn, mode: game.generation.mode, trees: game.generation.trees, puddle: game.generation.puddle, cheats: game.generation.cheats});
+              var WorldData = JSON.stringify({name: game.world, respawn: game.generation.respawn, mode: game.generation.mode, trees: game.generation.trees, puddle: game.generation.puddle, cheats: game.generation.cheats, achievements: game.achievements});
               var BlockSave = game.blockSave();
               var EntitySave = game.entitySave();
               var result = "BLOCKBUILDER3D WORLD FILE GENERATED BY VERSION: "+game.version+"\nWorldData:\n"+WorldData+"\nBlockSave:\n"+BlockSave+"\nEntitySave:\n"+EntitySave;
@@ -393,6 +418,7 @@
               game.generation.puddle = tmp1.puddle;
               game.generation.mode = tmp1.mode;
               game.generation.cheats = tmp1.cheats;
+              game.achievements = tmp1.achievements||[];
               game.blockLoad(tmp2);
               game.entityLoad(tmp3);
               setTimeout(function(){
