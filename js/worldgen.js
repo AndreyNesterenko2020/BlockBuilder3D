@@ -192,7 +192,19 @@ game.generation.house = function(x, z) {
   new game.block(x+5, 0, z+6, "planks", false, false, true);
   new game.block(x+6, 0, z+6, "planks", false, false, true);
   //loot chest
-  new game.block(x+2, 1, z+2, "chest", false, false, true);
+  var chest = new game.block(x+2, 1, z+2, "chest", false, false, true);
+  var diamondChance = Math.random()*100;
+  if(diamondChance >= 60) {
+    new game.item("diamond", chest.inventory, Math.round(Math.random()*5)+1);
+  };
+  var appleChance = Math.random()*100;
+  if(diamondChance >= 10) {
+    new game.item("apple", chest.inventory, Math.round(Math.random()*5)+1);
+  };
+  var diamondappleChance = Math.random()*100;
+  if(diamondappleChance >= 10) {
+    new game.item("diamond_apple", chest.inventory, Math.round(Math.random()*5)+1);
+  };
 };
 game.generation.tree = function(x, y, z) {
   if(game.getBlock(x, y-1, z)){
