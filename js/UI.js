@@ -222,7 +222,7 @@ game.UI.commands = {
     return "Refreshed all chunks.";
   },
   xray: function (block) {
-    game.UI.achievement("Secret", "Do something special");
+    game.UI.achievement("Secret", "Do something special", "unknown.png");
     game.loadedBlocks.forEach(function (block_) {
       if(block_.block.type == block) {
         block_.visible = true;
@@ -292,7 +292,7 @@ game.UI.init = function (){
     game.UI.settings.style.width = "40%";
     game.UI.settings.style.height = "55%";
     game.UI.settings.style.overflowY = "scroll";
-    game.UI.settings.innerHTML += "<h1>Game Paused</h1><button style=width:30%;left:35% onclick=this.parentElement.style.display='none';game.controls.PointerLock.lock();game.paused=false; ><h1>Resume</button><br><br><br><button style=width:30%;left:35% onmouseover='this.innerHTML=`<h1> Your achievements: `+game.achievements+`</h1>`' onmouseout='this.innerHTML=`<h1>View Achievements</h1>`'><h1>View Achievments</button><br><br><br><button style=width:30%;left:35% onclick=location.reload()><h1>Leave Game</button>";
+    game.UI.settings.innerHTML += "<h1>Game Paused</h1><button style=position:relative;width:90%;margin-left:5% onclick=this.parentElement.style.display='none';game.controls.PointerLock.lock();game.paused=false; ><h1>Resume</button><br><button style=position:relative;width:90%;margin-left:5% onclick=game.UI.achievements.style.display='block';game.UI.updateAchievements(); ><h1>View Achievments</button><br><button style=position:relative;width:90%;margin-left:5% onclick=game.save(2)><h1>Download world</button><br><button style=position:relative;width:90%;margin-left:5% onclick=location.reload()><h1>Leave Game</button>";
     game.UI.settingsButton = document.createElement("button")
     game.UI.settingsButton.onclick = function(){game.UI.settings.style.display=`block`;};
     game.UI.settingsButton.innerHTML = "Settings";
@@ -426,6 +426,18 @@ game.UI.init = function (){
     game.UI.chestSlot(5);
     game.UI.chestSlot(6);
     game.UI.chestSlot(7);
+    game.UI.achievements = document.createElement("div");
+    game.UI.achievements.style.position = "fixed";
+    game.UI.achievements.style.width = "60%";
+    game.UI.achievements.style.height = "60%";
+    game.UI.achievements.style.border = "solid black 4px";
+    game.UI.achievements.style.backgroundColor = "white";
+    game.UI.achievements.style.top = "10%";
+    game.UI.achievements.style.left = "20%";
+    game.UI.achievements.style.display = "none";
+    game.UI.achievements.style.overflowY = "scroll";
+    game.UI.achievements.innerHTML = "<h1 style='position: relative; margin-left: 35%'>Your achievements</h1><div id='achievementlist'></div><button style='position: relative; margin-left: 45%' onclick=game.UI.achievements.style.display=none><h1>Close</h1></button>";
+    document.body.appendChild(game.UI.achievements);
 };
 game.UI.consoleMessage = function (message){
   document.getElementById("console_output").innerHTML += "<br>"+message;
@@ -541,6 +553,7 @@ game.UI.damage = function () {
 game.UI.itemPickedUp = function (amount, type) {
   if(type == "iron") game.UI.achievement("The Irony", "Find iron", "iron.png");
   if(type == "diamond") game.UI.achievement("Striking it rich", "Find diamonds", "diamond.png");
+  if(type == "fat") game.UI.achievement("Finding Fat", "Find fat", "fat.png");
   var itemPickedUp = document.createElement("div");
   itemPickedUp.style.position = "fixed";
   itemPickedUp.style.top = "60%";
@@ -560,6 +573,33 @@ game.UI.itemPickedUp = function (amount, type) {
     itemPickedUp.style.opacity = 0;
     itemPickedUp.outerHTML = "";
   },1000);
+};
+game.UI.updateAchievements = function () {
+  document.getElementById("achievementlist").innerHTML = "";
+  if(game.achievements.includes("Demolition")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/break6.png' width=10% style='float: left'><h1>Demolition</h1><h2>Break your first block</h2></div>";
+  };
+  if(game.achievements.includes("The Irony")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/iron.png' width=10% style='float: left'><h1>The Irony</h1><h2>Find iron</h2></div>";
+  };
+  if(game.achievements.includes("Striking it rich")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/diamond.png' width=10% style='float: left'><h1>Striking it rich</h1><h2>Find diamonds</h2></div>";
+  };
+  if(game.achievements.includes("Finding Fat")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/fat.png' width=10% style='float: left'><h1>Finding Fat</h1><h2>Find fat</h2></div>";
+  };
+  if(game.achievements.includes("Secret")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/unknown.png' width=10% style='float: left'><h1>Secret</h1><h2>Do something special</h2></div>";
+  };
+  if(game.achievements.includes("Universal Anger")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/anger.png' width=10% style='float: left'><h1>Universal Anger</h1><h2>Aggravate both Bulls and Roosters</h2></div>";
+  };
+  if(game.achievements.includes("Crafter")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/stick.png' width=10% style='float: left'><h1>Crafter</h1><h2>Learn to craft</h2></div>";
+  };
+  if(game.achievements.includes("Farmer")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/tree.png' width=10% style='float: left'><h1>Farmer</h1><h2>Plant a tree</h2></div>";
+  };
 };
 game.UI.save = function () {
   var save = document.createElement("div");
@@ -647,7 +687,11 @@ game.UI.slot = function (id) {
         var first_item = game.UI.currentChest.inventory.slots[game.UI.first.id.split("slot")[1]];
       };
       var second = game.UI.second.id.split("slot")[1];
-      var second_item = game.player.inventory.slots[game.UI.second.id.split("slot")[1]];
+      if(!game.UI.chestSlots.includes(game.UI.second)) {
+        var second_item = game.player.inventory.slots[game.UI.second.id.split("slot")[1]];
+      } else {
+        var second_item = game.UI.currentChest.inventory.slots[game.UI.second.id.split("slot")[1]];
+      };
       if(first_item && second_item) {
         game.player.inventory.slots[game.UI.first.id.split("slot")[1]].slot = game.player.inventory.slots[game.UI.second.id.split("slot")[1]].slot;
         game.player.inventory.slots[game.UI.second.id.split("slot")[1]].slot = first;
@@ -657,7 +701,11 @@ game.UI.slot = function (id) {
       } else {
         game.UI.currentChest.inventory.slots[first] = second_item;
       };
-      game.player.inventory.slots[second] = first_item;
+      if(!game.UI.chestSlots.includes(game.UI.second)) {
+        game.player.inventory.slots[second] = first_item;
+      } else {
+        game.UI.currentChest.inventory.slots[second] = first_item;
+      };
       a = game.UI.first;
       b = game.UI.second;
       game.UI.first = undefined;
@@ -688,7 +736,45 @@ game.UI.chestSlot = function (id) {
   slot.innerHTML = "";
   slot.onclick = function () {
     slot.style.border = "solid grey 5px";
-    game.UI.first = slot;
+    if(game.UI.first){
+      game.UI.second = slot;
+      var first = game.UI.first.id.split("slot")[1];
+      if(!game.UI.chestSlots.includes(game.UI.first)) {
+        var first_item = game.player.inventory.slots[game.UI.first.id.split("slot")[1]];
+      } else {
+        var first_item = game.UI.currentChest.inventory.slots[game.UI.first.id.split("slot")[1]];
+      };
+      var second = game.UI.second.id.split("slot")[1];
+      if(!game.UI.chestSlots.includes(game.UI.second)) {
+        var second_item = game.player.inventory.slots[game.UI.second.id.split("slot")[1]];
+      } else {
+        var second_item = game.UI.currentChest.inventory.slots[game.UI.second.id.split("slot")[1]];
+      };
+      if(first_item && second_item) {
+        game.player.inventory.slots[game.UI.first.id.split("slot")[1]].slot = game.player.inventory.slots[game.UI.second.id.split("slot")[1]].slot;
+        game.player.inventory.slots[game.UI.second.id.split("slot")[1]].slot = first;
+      };
+      if(!game.UI.chestSlots.includes(game.UI.first)) {
+        game.player.inventory.slots[first] = second_item;
+      } else {
+        game.UI.currentChest.inventory.slots[first] = second_item;
+      };
+      if(!game.UI.chestSlots.includes(game.UI.second)) {
+        game.player.inventory.slots[second] = first_item;
+      } else {
+        game.UI.currentChest.inventory.slots[second] = first_item;
+      };
+      a = game.UI.first;
+      b = game.UI.second;
+      game.UI.first = undefined;
+      game.UI.second = undefined;
+      setTimeout(function (){
+        a.style.border = "solid black 5px";
+        b.style.border = "solid black 5px";
+      }, 300);
+    } else {
+      game.UI.first = slot;
+    };
   };
   game.UI.chestSlots.push(slot);
 };
@@ -760,6 +846,7 @@ game.UI.craft = function (item) {
     new game.item(item, game.player.inventory, game.UI.recipes[item].amount);
     game.UI.updateRecipes();
     game.UI.alert("Crafted "+item);
+    game.UI.achievement("Crafter", "Learn to craft", "stick.png");
   } else {
     game.UI.alert("Not enough items!");
   };
