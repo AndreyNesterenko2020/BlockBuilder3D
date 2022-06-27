@@ -212,6 +212,7 @@ game.UI.commands = {
         return "can only give a minimum of one item to a player.";
       };
       new game.item(item, game.player.inventory, Number(amount));
+      game.UI.itemPickedUp(0, item);
       return "gave "+amount+" of "+item+" to the player.";
     } else {
       return "Invalid item.";
@@ -435,8 +436,7 @@ game.UI.init = function (){
     game.UI.achievements.style.top = "10%";
     game.UI.achievements.style.left = "20%";
     game.UI.achievements.style.display = "none";
-    game.UI.achievements.style.overflowY = "scroll";
-    game.UI.achievements.innerHTML = "<h1 style='position: relative; margin-left: 35%'>Your achievements</h1><div id='achievementlist'></div><button style='position: relative; margin-left: 45%' onclick=game.UI.achievements.style.display=none><h1>Close</h1></button>";
+    game.UI.achievements.innerHTML = "<h1 style='position: relative; margin-left: 35%'>Your achievements</h1><div id='achievementlist' style='overflow-y: scroll; height: 60%'></div><button style='position: relative; margin-left: 45%' onclick=game.UI.achievements.style.display=none><h1>Close</h1></button>";
     document.body.appendChild(game.UI.achievements);
 };
 game.UI.consoleMessage = function (message){
@@ -554,6 +554,7 @@ game.UI.itemPickedUp = function (amount, type) {
   if(type == "iron") game.UI.achievement("The Irony", "Find iron", "iron.png");
   if(type == "diamond") game.UI.achievement("Striking it rich", "Find diamonds", "diamond.png");
   if(type == "fat") game.UI.achievement("Finding Fat", "Find fat", "fat.png");
+  if(amount == 0) return;
   var itemPickedUp = document.createElement("div");
   itemPickedUp.style.position = "fixed";
   itemPickedUp.style.top = "60%";
@@ -600,6 +601,9 @@ game.UI.updateAchievements = function () {
   if(game.achievements.includes("Farmer")) {
     document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/tree.png' width=10% style='float: left'><h1>Farmer</h1><h2>Plant a tree</h2></div>";
   };
+  if(game.achievements.includes("Explorer")) {
+    document.getElementById("achievementlist").innerHTML += "<div style=border:solid;background-color:white; class='hover'><img src='textures/bricks.png' width=10% style='float: left'><h1>Explorer</h1><h2>Find an abandoned house</h2></div>";
+  };
 };
 game.UI.save = function () {
   var save = document.createElement("div");
@@ -638,7 +642,8 @@ game.UI.openInventory = function (chest) {
   };
 };
 game.UI.closeInventory = function () {
-    game.UI.currentChest = null;
+  if(game.UI.currentChest) game.UI.sound("chest_close");
+  game.UI.currentChest = null;
   game.UI.inventoryGUI.style.display = "none";
   game.UI.inventoryGUI.open = false;
   game.controls.PointerLock.lock();
@@ -680,17 +685,19 @@ game.UI.slot = function (id) {
     slot.style.border = "solid grey 5px";
     if(game.UI.first){
       game.UI.second = slot;
+      var first_item;
+      var second_item;
       var first = game.UI.first.id.split("slot")[1];
       if(!game.UI.chestSlots.includes(game.UI.first)) {
-        var first_item = game.player.inventory.slots[game.UI.first.id.split("slot")[1]];
+        first_item = game.player.inventory.slots[game.UI.first.id.split("slot")[1]];
       } else {
-        var first_item = game.UI.currentChest.inventory.slots[game.UI.first.id.split("slot")[1]];
+        first_item = game.UI.currentChest.inventory.slots[game.UI.first.id.split("slot")[1]];
       };
       var second = game.UI.second.id.split("slot")[1];
       if(!game.UI.chestSlots.includes(game.UI.second)) {
-        var second_item = game.player.inventory.slots[game.UI.second.id.split("slot")[1]];
+        second_item = game.player.inventory.slots[game.UI.second.id.split("slot")[1]];
       } else {
-        var second_item = game.UI.currentChest.inventory.slots[game.UI.second.id.split("slot")[1]];
+        second_item = game.UI.currentChest.inventory.slots[game.UI.second.id.split("slot")[1]];
       };
       if(first_item && second_item) {
         game.player.inventory.slots[game.UI.first.id.split("slot")[1]].slot = game.player.inventory.slots[game.UI.second.id.split("slot")[1]].slot;
@@ -706,6 +713,7 @@ game.UI.slot = function (id) {
       } else {
         game.UI.currentChest.inventory.slots[second] = first_item;
       };
+      game.UI.itemPickedUp(0, first_item.type);
       a = game.UI.first;
       b = game.UI.second;
       game.UI.first = undefined;
@@ -738,17 +746,19 @@ game.UI.chestSlot = function (id) {
     slot.style.border = "solid grey 5px";
     if(game.UI.first){
       game.UI.second = slot;
+      var first_item;
+      var second_item;
       var first = game.UI.first.id.split("slot")[1];
       if(!game.UI.chestSlots.includes(game.UI.first)) {
-        var first_item = game.player.inventory.slots[game.UI.first.id.split("slot")[1]];
+        first_item = game.player.inventory.slots[game.UI.first.id.split("slot")[1]];
       } else {
-        var first_item = game.UI.currentChest.inventory.slots[game.UI.first.id.split("slot")[1]];
+        first_item = game.UI.currentChest.inventory.slots[game.UI.first.id.split("slot")[1]];
       };
       var second = game.UI.second.id.split("slot")[1];
       if(!game.UI.chestSlots.includes(game.UI.second)) {
-        var second_item = game.player.inventory.slots[game.UI.second.id.split("slot")[1]];
+        second_item = game.player.inventory.slots[game.UI.second.id.split("slot")[1]];
       } else {
-        var second_item = game.UI.currentChest.inventory.slots[game.UI.second.id.split("slot")[1]];
+        second_item = game.UI.currentChest.inventory.slots[game.UI.second.id.split("slot")[1]];
       };
       if(first_item && second_item) {
         game.player.inventory.slots[game.UI.first.id.split("slot")[1]].slot = game.player.inventory.slots[game.UI.second.id.split("slot")[1]].slot;
@@ -764,6 +774,7 @@ game.UI.chestSlot = function (id) {
       } else {
         game.UI.currentChest.inventory.slots[second] = first_item;
       };
+      game.UI.itemPickedUp(0, first_item.type);
       a = game.UI.first;
       b = game.UI.second;
       game.UI.first = undefined;
@@ -896,21 +907,34 @@ document.body.addEventListener("keydown", function(event) {
       document.getElementById("console_input").blur();
       game.controls.PointerLock.lock();
     };
-    if(event.key == "/"){
+    if(event.code == "Slash"){
       document.getElementById("console").style.visibility = "visible";
       document.getElementById("console_input").focus();
       game.controls.PointerLock.unlock();
     };
     if(document.activeElement == document.getElementById("console_input")) return;
-    if(event.key == "e"){
+    if(event.code == "KeyE"){
       game.UI.toggleInventory();
     };
-    if(event.key == "t"){
+    if(event.code == "KeyT"){
       game.player.inventory.drop(game.player.inventory.selection);
       game.player.playAnimation("handAction");
       setTimeout(function(){game.player.playAnimation("handAction", 1, 0)}, 250);
     };
+    if(event.key == "\\"){
+      game.debug = !game.debug;
+      game.UI.consoleMessage("Toggled debug.");
+    };
     if(game.UI.inventoryGUI.open) return;
+    if(event.code == "KeyZ"){
+      if(game.camera.zoom == 10) {
+        game.camera.zoom = 1
+        game.UI.alert("x1 zoom");
+      } else {
+        game.camera.zoom = 10
+        game.UI.alert("x10 zoom");
+      };
+    };
     if(isNaN(Number(event.key)) == false && Number(event.key) != 0){
       if(event.key > 6){
         return;
@@ -930,7 +954,7 @@ document.body.addEventListener("keydown", function(event) {
     };
 });
 document.body.addEventListener("wheel", function(event) {
-  if(game.UI.inventoryGUI.open) return;
+  if(game.paused) return;
   game.player.inventory.selection+=event.deltaY/Math.abs(event.deltaY);
   if(game.player.inventory.selection < 1){
     game.player.inventory.selection = 6;
@@ -975,6 +999,7 @@ game.renderer.domElement.addEventListener("mousedown", () => {
     if(intersects[0].object.block && intersects[0].object.block.type == "chest") {
       console.log("Opened chest");
       game.UI.toggleInventory(intersects[0].object.block);
+      game.UI.sound("chest_open");
       return;
     };
     game.player.inventory.slots[game.player.inventory.selection].rightuse(playerPos, raycastPos, intersects[0].object, game.player);

@@ -281,6 +281,7 @@ game.entityTypes = {
     this.entityData.handActionCooldown = false;
     this.entityData.attackCooldown = false;
     if(!game.player) game.player = this;
+    if(game.getEntitiesByName("player").length > 1) this.delete();
     var this_ = this;
     var sin = 0;
     var walk = game.UI.sound("walk");
@@ -330,25 +331,25 @@ game.entityTypes = {
         return;
       };
       if(document.activeElement == document.getElementById("console_input")) return;
-      if(event.key == "w"){
+      if(event.code == "KeyW"){
         walk.muted = false;
         sin += 0.1;
         this_.animations[1] = Math.abs(Math.sin(sin));
         this_.movement[0] = 1;
       };
-      if(event.key == "s"){
+      if(event.code == "KeyS"){
         walk.muted = false;
         sin += 0.1;
         this_.animations[1] = Math.abs(Math.sin(sin));
         this_.movement[1] = 1;
       };
-      if(event.key == "d"){
+      if(event.code == "KeyD"){
         walk.muted = false;
         sin += 0.1;
         this_.animations[1] = Math.abs(Math.sin(sin));
         this_.movement[2] = 1;
       };
-      if(event.key == "a"){
+      if(event.code == "KeyA"){
         walk.muted = false;
         sin += 0.1;
         this_.animations[1] = Math.abs(Math.sin(sin));
@@ -364,25 +365,25 @@ game.entityTypes = {
       if(this_.health == 0 || this_[0] == "deleted"){
         return;
       };
-      if(event.key == "w"){
+      if(event.code == "KeyW"){
         walk.muted = true;
         sin += 0.1;
         this_.animations[1] = Math.abs(Math.sin(sin));
         this_.movement[0] = 0;
       };
-      if(event.key == "s"){
+      if(event.code == "KeyS"){
         walk.muted = true;
         sin += 0.1;
         this_.animations[1] = Math.abs(Math.sin(sin));
         this_.movement[1] = 0;
       };
-      if(event.key == "d"){
+      if(event.code == "KeyD"){
         walk.muted = true;
         sin += 0.1;
         this_.animations[1] = Math.abs(Math.sin(sin));
         this_.movement[2] = 0;
       };
-      if(event.key == "a"){
+      if(event.code == "KeyA"){
         walk.muted = true;
         sin += 0.1;
         this_.animations[1] = Math.abs(Math.sin(sin));

@@ -408,6 +408,11 @@ game.whilemousedown = function(event) {
         game.UI.sound(intersects[0].object.block.type+Math.round(Math.random()*2+1), 0.5);
         if(!game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"]) game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"), alphaTest: 0.5});
         intersects[0].object.block.breakOverlay.material = game.materials["textures/break"+Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10)+".png"];
+        if(Math.round((intersects[0].object.block.break/intersects[0].object.block.hardness)*10) == 0) {
+          intersects[0].object.block.breakOverlay.visible = false;
+        } else {
+          intersects[0].object.block.breakOverlay.visible = true;
+        };
       };
     };
   };

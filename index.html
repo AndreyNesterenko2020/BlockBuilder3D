@@ -61,8 +61,8 @@
     <body onbeforeunload="if(!game.paused){return game.save(1)}">
     <h1 id="menu" style="height: 100%; width: 100%; position: fixed; top: 0; margin-left: 0px; margin-top: 0px; text-align: center; background-image: url('textures/dirt.png');">
       <br>BLOCK BUILDER 3D
-      <button style="top: 40%; left: 33.3%; width: 33.3%" onclick="worldSelect = 'worldSelect'; u = 'upload'; menu = 'menu'; none = 'none'; n = 'new world-'+Math.floor(Math.random()*1000); worldtype = 'worldtype'; worldname = 'worldname'; thin = 'thin'; thick = 'thick'; worldprompt = `<br>BLOCK BUILDER 3D<br><br><br><br>Create World<br><br>Name: <input autocomplete=off id=worldname ></input><br><br><br>World Type: <select id=worldtype><option>thin</option><option>thick</option></select><br><br>Start with items: <input onclick=game.generation.items=!game.generation.items type=checkbox value=false><br><br>Allow cheats: <input onclick=game.generation.cheats=!game.generation.cheats type=checkbox value=false><br><br>Allow respawn: <input onclick=game.generation.respawn=!game.generation.respawn type=checkbox checked=true><br><br><button style='left:47%' onclick='game.world = document.getElementById(worldname).value; if(document.getElementById(worldtype).value == thin) {game.generation.mode = 1;} else if (document.getElementById(worldtype).value == thick){game.generation.mode = 2;}; game.init();'><h1>Create World</h1></button>`; document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<p style='margin-top: 5%'>World Select</p><br><button style='top: 70%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(menu).innerHTML = worldprompt; document.getElementById(worldname).value = n; document.getElementsByClassName(worldSelect)[0].style.display = none;'>create new world</button><button type='file' style='top: 80%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(u).click()'>Upload World</button>`; document.getElementsByClassName('worldSelect')[0].style.display = 'block'; Object.keys(localStorage).forEach(function (world){try{var world0 = document.createElement('button'); world0.style='width: 95%; text-align: center; border: solid black 4px; position: relative'; world0.innerHTML = '<h1>'+world+'<h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world0); world0.onclick=function(){game.init(localStorage[world]);}; var world1 = document.createElement('button'); world1.style='width: 5%; text-align: center; border: solid black 4px; position: relative'; world1.innerHTML = '<h1><img src=textures/trash.png></img></h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world1); world1.onclick=function(){localStorage.removeItem(world); location.reload();}}catch(e){console.log(e)}})"><h1>Play</h1></button>
-      <button style="top: 50%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>How to play:<br><br>WASD - Move<br>Left Mouse Button - attack/break<br>Right Mouse Button - build<br>E - open inventory<br>T - throw item<br>Scroll/Number Keys - select item from toolbar<br>Space - jump<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>How to play</h1></button>
+      <button style="top: 40%; left: 33.3%; width: 33.3%" onclick="worldSelect = 'worldSelect'; u = 'upload'; menu = 'menu'; none = 'none'; n = 'new world-'+Math.floor(Math.random()*1000); worldtype = 'worldtype'; worldname = 'worldname'; thin = 'thin'; thick = 'thick'; worldprompt = `<br>BLOCK BUILDER 3D<br><br><br><br>Create World<br><br>Name: <input autocomplete=off id=worldname ></input><br><br><br>World Type: <select id=worldtype><option>thin</option><option>thick</option></select><br><br>Start with items: <input onclick=game.generation.items=!game.generation.items type=checkbox value=false><br><br>Allow cheats: <input onclick=game.generation.cheats=!game.generation.cheats type=checkbox value=false><br><br>Allow respawn: <input onclick=game.generation.respawn=!game.generation.respawn type=checkbox checked=true><br><br><button style='left:47%' onclick='game.world = document.getElementById(worldname).value; if(document.getElementById(worldtype).value == thin) {game.generation.mode = 1;} else if (document.getElementById(worldtype).value == thick){game.generation.mode = 2;}; game.init();'><h1>Create World</h1></button>`; document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<p style='margin-top: 5%'>World Select</p><br><button style='top: 70%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(menu).innerHTML = worldprompt; document.getElementById(worldname).value = n; document.getElementsByClassName(worldSelect)[0].style.display = none;'>create new world</button><button type='file' style='top: 80%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(u).click()'>Upload World</button>`; document.getElementsByClassName('worldSelect')[0].style.display = 'block'; Object.keys(localStorage).forEach(function (world){try{var world0 = document.createElement('button'); world0.style='width: 95%; text-align: center; border: solid black 4px; position: relative'; world0.innerHTML = '<h1>'+world+'<\h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world0); world0.onclick=function(){game.init(localStorage[world]);}; var world1 = document.createElement('button'); world1.style='width: 5%; text-align: center; border: solid black 4px; position: relative'; world1.innerHTML = '<h1><img src=textures/trash.png></img></h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world1); world1.onclick=function(){localStorage.removeItem(world); location.reload();}}catch(e){console.log(e)}})"><h1>Play</h1></button>
+      <button style="top: 50%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>How to play:<br><br>WASD - Move<br>Left Mouse Button - attack/break<br>Right Mouse Button - build<br>E - open inventory<br>T - throw item<br>Scroll/Number Keys - select item from toolbar<br>Space - jump<br>\\ - Toggle debug mode<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>How to play</h1></button>
       <button style="top: 60%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>Credits:<br><br>ExplodIng_Andrey - creator, modeler, and programmer<br>Asztro - Helping artist<br>SyrupHunter270 - Sound effects<br>Tonytheboi - Tester and Sound effects<br>All our friends - supporting us<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>Credits</h1></button>
     </h1>
     <div class="worldSelect" style=display:none><h2 style="position: fixed">Looks like there are no worlds here... go ahead, make one right now!</h2></div>
@@ -70,7 +70,7 @@
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.4.1",
+                version: "1.4.2",
                 materials: {},
                 blocks: {},
                 blockObjects: {},
@@ -117,6 +117,7 @@
             game.gridMesh = new THREE.GridHelper(80, 10);
             game.gridMesh.position.y = 1;
             game.scene.add(game.gridMesh);
+            document.addEventListener('contextmenu', event => event.preventDefault());
             game.renderer.domElement.onclick = function (){
               if (game.controls.selection == "FreeCam" || game.controls.selection == "Player") {
                 game.controls.PointerLock.lock();
@@ -136,6 +137,7 @@
                     if(game.player.chunk) {
                       game.gridMesh.position.x = game.player.chunk.x - 0.5;
                       game.gridMesh.position.z = game.player.chunk.z - 0.5;
+                      //chunk loading and unloading
                       game.player.chunk.load();
                       if(game.renderMode == 2){
                         try {
@@ -293,7 +295,7 @@
                   if(game.debug){
                     game.gridMesh.visible = true;
                     try {
-                      var closestEntity = undefined;
+                      var closestEntity = {name:""};
                       var closestDistance = Infinity;
                       for(var i = 0; i < game.entities.length; i++){
                         if(game.entities[i] == game.player || game.entities[i].health == 0 || game.entities[i][0]){
@@ -316,7 +318,7 @@
                       } else {
                         selection = game.player.inventory.slots[game.player.inventory.selection].type;
                       };
-                      game.UI.debug.innerHTML = "BlockBuilder3D version: "+game.version+"<br>THREE js version: "+THREE.REVISION+"<br><br>FPS: "+game.FPS+"<br><br>Nearest Entity: "+closestEntity.name+"<br>Distance: "+closestDistance+"<br><br>Player position: "+game.player.getPosition().position+"<br>Chunk: x: "+game.player.chunk.x+" z: "+game.player.chunk.z+"<br><br>Facing block: "+block+"<br>Selected item: "+selection+"<br><br>Gamemode: "+game.gamemode+"<br><br>Bull angry: "+!!game.bullAnger+"<br><br>Generation Settings:<br>Mode: "+game.generation.mode+"<br>Size: "+game.generation.size+"<br>Allow respawn: "+game.generation.respawn+"<br>Chromebook mode: "+game.generation.chromebook+"<br>Mud puddle: "+game.generation.puddle+"<br>Generate trees: "+game.generation.trees+"<br>World: "+game.world;
+                      game.UI.debug.innerHTML = "BlockBuilder3D version: "+game.version+"<br>THREE js version: "+THREE.REVISION+"<br><br>FPS: "+game.FPS+"<br>Renderer info: "+JSON.stringify(game.renderer.info.render)+"<br><br>Nearest Entity: "+closestEntity.name+"<br>Distance: "+closestDistance+"<br><br>Player position: "+game.player.getPosition().position+"<br>Chunk: x: "+game.player.chunk.x+" z: "+game.player.chunk.z+"<br><br>Facing block: "+block+"<br>Selected item: "+selection+"<br><br>Gamemode: "+game.gamemode+"<br><br>Bull angry: "+!!game.bullAnger+"<br><br>Generation Settings:<br>Mode: "+game.generation.mode+"<br>Size: "+game.generation.size+"<br>Allow respawn: "+game.generation.respawn+"<br>Chromebook mode: "+game.generation.chromebook+"<br>Mud puddle: "+game.generation.puddle+"<br>Generate trees: "+game.generation.trees+"<br>World: "+game.world+"<br>Cheats: "+game.generation.cheats;
                       game.UI.debug.style.display = "block";
                     } catch (error) {
                       undefined;
@@ -335,6 +337,15 @@
                 };
             };
             game.init = function(world) {
+                //world version check
+                try {
+                  if(world.split("\n")[0].split("_")[1]){
+                    var prompt_ = confirm("Loading worlds with a version before 1.4.0 will cause corruption. Are you sure you want to load this world? World version: "+world.split("\n")[0].split("VERSION: ")[1]);
+                    if(prompt_ != true) return location.reload();
+                  };
+                } catch (error) {
+                  
+                };
                 document.title = document.title + " " + game.version;
                 game.render();
                 game.UI.init();
@@ -351,6 +362,7 @@
                 game.physics.world = new CANNON.World();
                 game.physics.world.solver.iterations = 1;
                 //game.generation.generate();
+                game.physics.world.broadphase.useBoundingBoxes = true;
                 game.entityPhysics();
                 game.startFPS();
                 if(world) {

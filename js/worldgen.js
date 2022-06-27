@@ -280,6 +280,7 @@ game.generation.generate = function (x, z) {
   };
   if(houseChance>=95){
     game.generation.house(x, z);
+    game.UI.achievement("Explorer", "Find an abandoned house.", "bricks.png");
   };
   if(game.generation.puddle && Math.round(Math.random()*100)>=80){
     game.generation.puddle = [x+Math.floor(Math.random()*(size-2)), 0, z+Math.floor(Math.random()*(size-2))+1];

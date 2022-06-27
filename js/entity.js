@@ -380,6 +380,9 @@ game.entityPhysics = function(){
         //let motion = objAmmo.getMotionState();
         var motion = true;
         game.entities[i].hitboxCombat.updateMatrixWorld();
+        if(game.entities[i].chunk.isLoaded) {
+          game.entities[i].ontick();
+        };
         if (motion && game.entities[i].physicsEnabled && game.entities[i].chunk && game.entities[i].chunk.isLoaded) {
             game.physics.tmpTrans = "";
             objThree.position.set(game.entities[i].readOnlyPosition[0], game.entities[i].readOnlyPosition[1], game.entities[i].readOnlyPosition[2]);
@@ -412,6 +415,5 @@ game.entityPhysics = function(){
         if(game.entities[i].getPosition().position[1] <= -128){
           game.entities[i].delete();
         };
-        game.entities[i].ontick();
     };
 };
