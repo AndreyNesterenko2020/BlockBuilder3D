@@ -77,7 +77,7 @@ game.block = class {
     if(!game.materials["textures/break0.png"]) game.materials["textures/break0.png"] = new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/break0.png"), transparent: true});
     this.breakOverlay.position.set(x, y, z);
     this.breakOverlay.material = game.materials["textures/break0.png"];
-    game.scene.add(this.breakOverlay);
+    //game.scene.add(this.breakOverlay);
     this.block.visible = false;
     this.breakOverlay.visible = false;
     this.breakOverlay.scale.set(1.00005, 1.00005, 1.00005);
@@ -137,10 +137,92 @@ game.block = class {
     this.block.position.y = y;
     this.block.position.z = z;
     this.block.block = this;
-    game.scene.add(this.block);
+    //game.scene.add(this.block);
     this.isLoaded = false;
-    this.load = function () {
-      if(this.isLoaded) return;
+    this.load = function (nophysics) {
+      if(nophysics) {
+        if(this.isLoaded == "semi") return
+      };
+      if(!nophysics) {
+        if(this.isLoaded == true) return
+      };
+      //check if block has at least one open face
+      var check = false;
+      if(!game.getBlock(x-1,y,z) || (game.getBlock(x-1,y,z) && game.getBlock(x-1,y,z).noOcclude)) check = true;
+      if(!game.getBlock(x+1,y,z) || (game.getBlock(x+1,y,z) && game.getBlock(x+1,y,z).noOcclude)) check = true;
+      if(!game.getBlock(x,y-1,z) || (game.getBlock(x,y-1,z) && game.getBlock(x,y-1,z).noOcclude)) check = true;
+      if(!game.getBlock(x,y+1,z) || (game.getBlock(x,y+1,z) && game.getBlock(x,y+1,z).noOcclude)) check = true;
+      if(!game.getBlock(x,y,z-1) || (game.getBlock(x,y,z-1) && game.getBlock(x,y,z-1).noOcclude)) check = true;
+      if(!game.getBlock(x,y,z+1) || (game.getBlock(x,y,z+1) && game.getBlock(x,y,z+1).noOcclude)) check = true;
+      //check if all neighbors have at least one open face
+      if(check && !this.noOcclude) {
+        //neighbor at negative x
+        var checkNegX = false;
+        if(game.getBlock(x-1,y,z)) {
+          if(!game.getBlock(x-2,y,z) || (game.getBlock(x-2,y,z) && game.getBlock(x-2,y,z).noOcclude)) checkNegX = true;
+          if(!game.getBlock(x,y,z) || (game.getBlock(x,y,z) && game.getBlock(x,y,z).noOcclude)) checkNegX = true;
+          if(!game.getBlock(x-1,y-1,z) || (game.getBlock(x-1,y-1,z) && game.getBlock(x-1,y-1,z).noOcclude)) checkNegX = true;
+          if(!game.getBlock(x-1,y+1,z) || (game.getBlock(x-1,y+1,z) && game.getBlock(x-1,y+1,z).noOcclude)) checkNegX = true;
+          if(!game.getBlock(x-1,y,z-1) || (game.getBlock(x-1,y,z) && game.getBlock(x-1,y,z).noOcclude)) checkNegX = true;
+          if(!game.getBlock(x-1,y,z+1) || (game.getBlock(x-1,y,z+1) && game.getBlock(x-1,y,z+1).noOcclude)) checkNegX = true;
+          if(!checkNegX) {game.getBlock(x-1,y,z).block.visible = false; game.getBlock(x-1,y,z).breakOverlay.visible = false; game.getBlock(x-1,y,z).occluded = this; game.scene.remove(game.getBlock(x-1,y,z).block); game.scene.remove(game.getBlock(x-1,y,z).breakOverlay);}
+        };
+        //neighbor at positive x
+        var checkPosX = false;
+        if(game.getBlock(x+1,y,z)) {
+          if(!game.getBlock(x+2,y,z) || (game.getBlock(x+2,y,z) && game.getBlock(x+2,y,z).noOcclude)) checkPosX = true;
+          if(!game.getBlock(x,y,z) || (game.getBlock(x,y,z) && game.getBlock(x,y,z).noOcclude)) checkPosX = true;
+          if(!game.getBlock(x+1,y-1,z) || (game.getBlock(x+1,y-1,z) && game.getBlock(x+1,y-1,z).noOcclude)) checkPosX = true;
+          if(!game.getBlock(x+1,y+1,z) || (game.getBlock(x+1,y+1,z) && game.getBlock(x+1,y+1,z).noOcclude)) checkPosX = true;
+          if(!game.getBlock(x+1,y,z-1) || (game.getBlock(x+1,y,z-1) && game.getBlock(x+1,y,z-1).noOcclude)) checkPosX = true;
+          if(!game.getBlock(x+1,y,z+1) || (game.getBlock(x+1,y,z+1) && game.getBlock(x+1,y,z+1).noOcclude)) checkPosX = true;
+          if(!checkPosX) {game.getBlock(x+1,y,z).block.visible = false; game.getBlock(x+1,y,z).breakOverlay.visible = false; game.getBlock(x+1,y,z).occluded = this; game.scene.remove(game.getBlock(x+1,y,z).block); game.scene.remove(game.getBlock(x+1,y,z).breakOverlay);}
+        };
+        //neighbor at negative y
+        var checkNegY = false;
+        if(game.getBlock(x,y-1,z)) {
+          if(!game.getBlock(x-1,y-1,z) || (game.getBlock(x-1,y,z) && game.getBlock(x-1,y,z).noOcclude)) checkNegY = true;
+          if(!game.getBlock(x+1,y-1,z) || (game.getBlock(x+1,y,z) && game.getBlock(x-1,y,z).noOcclude)) checkNegY = true;
+          if(!game.getBlock(x,y-2,z) || (game.getBlock(x,y-2,z) && game.getBlock(x,y-2,z).noOcclude)) checkNegY = true;
+          if(!game.getBlock(x,y,z) || (game.getBlock(x,y,z) && game.getBlock(x,y,z).noOcclude)) checkNegY = true;
+          if(!game.getBlock(x,y-1,z-1) || (game.getBlock(x,y-1,z-1) && game.getBlock(x,y-1,z-1).noOcclude)) checkNegY = true;
+          if(!game.getBlock(x,y-1,z+1) || (game.getBlock(x,y-1,z+1) && game.getBlock(x,y-1,z+1).noOcclude)) checkNegY = true;
+          if(!checkNegY) {game.getBlock(x,y-1,z).block.visible = false; game.getBlock(x,y-1,z).breakOverlay.visible = false; game.getBlock(x,y-1,z).occluded = this; game.scene.remove(game.getBlock(x,y-1,z).block); game.scene.remove(game.getBlock(x,y-1,z).breakOverlay);}
+        };
+        //neighbor at positive y
+        var checkPosY = false;
+        if(game.getBlock(x,y+1,z)) {
+          if(!game.getBlock(x-1,y+1,z) || (game.getBlock(x-1,y+1,z) && game.getBlock(x-1,y+1,z).noOcclude)) checkPosY = true;
+          if(!game.getBlock(x+1,y+1,z) || (game.getBlock(x+1,y+1,z) && game.getBlock(x+1,y+1,z).noOcclude)) checkPosY = true;
+          if(!game.getBlock(x,y+2,z) || (game.getBlock(x,y+2,z) && game.getBlock(x,y+2,z).noOcclude)) checkPosY = true;
+          if(!game.getBlock(x,y,z) || (game.getBlock(x,y,z) && game.getBlock(x,y,z).noOcclude)) checkPosY = true;
+          if(!game.getBlock(x,y+1,z-1) || (game.getBlock(x,y+1,z-1) && game.getBlock(x,y+1,z-1).noOcclude)) checkPosY = true;
+          if(!game.getBlock(x,y+1,z+1) || (game.getBlock(x,y+1,z+1) && game.getBlock(x,y+1,z+1).noOcclude)) checkPosY = true;
+          if(!checkPosY) {game.getBlock(x,y+1,z).block.visible = false; game.getBlock(x,y+1,z).breakOverlay.visible = false; game.getBlock(x,y+1,z).occluded = this; game.scene.remove(game.getBlock(x,y+1,z).block); game.scene.remove(game.getBlock(x,y+1,z).breakOverlay);}
+        };
+        //neighbor at negative z
+        var checkNegZ = false;
+        if(game.getBlock(x,y,z-1)) {
+          if(!game.getBlock(x-1,y,z-1) || (game.getBlock(x-1,y,z-1) && game.getBlock(x-1,y,z-1).noOcclude)) checkNegZ = true;
+          if(!game.getBlock(x+1,y,z-1) || (game.getBlock(x+1,y,z-1) && game.getBlock(x+1,y,z-1).noOcclude)) checkNegZ = true;
+          if(!game.getBlock(x,y-1,z-1) || (game.getBlock(x,y-1,z-1) && game.getBlock(x,y-1,z-1).noOcclude)) checkNegZ = true;
+          if(!game.getBlock(x,y+1,z-1) || (game.getBlock(x,y+1,z-1) && game.getBlock(x,y+1,z-1).noOcclude)) checkNegZ = true;
+          if(!game.getBlock(x,y,z-2) || (game.getBlock(x,y,z-2) && game.getBlock(x,y,z-2).noOcclude)) checkNegZ = true;
+          if(!game.getBlock(x,y,z) || (game.getBlock(x,y,z) && game.getBlock(x,y,z).noOcclude)) checkNegZ = true;
+          if(!checkNegZ) {game.getBlock(x,y,z-1).block.visible = false; game.getBlock(x,y,z-1).breakOverlay.visible = false; game.getBlock(x,y,z-1).occluded = this; game.scene.remove(game.getBlock(x,y,z-1).block); game.scene.remove(game.getBlock(x,y,z-1).breakOverlay);}
+        }; 
+        //neighbor at positive z
+        var checkPosZ = false;
+        if(game.getBlock(x,y,z+1)) {
+          if(!game.getBlock(x-1,y,z+1) || (game.getBlock(x-1,y,z+1) && game.getBlock(x-1,y,z+1).noOcclude)) checkPosZ = true;
+          if(!game.getBlock(x+1,y,z+1) || (game.getBlock(x+1,y,z+1) && game.getBlock(x+1,y,z+1).noOcclude)) checkPosZ = true;
+          if(!game.getBlock(x,y-1,z+1) || (game.getBlock(x,y-1,z+1) && game.getBlock(x,y-1,z+1).noOcclude)) checkPosZ = true;
+          if(!game.getBlock(x,y+1,z+1) || (game.getBlock(x,y+1,z+1) && game.getBlock(x,y+1,z+1).noOcclude)) checkPosZ = true;
+          if(!game.getBlock(x,y,z+2) || (game.getBlock(x,y,z+2) && game.getBlock(x,y,z+2).noOcclude)) checkPosZ = true;
+          if(!game.getBlock(x,y,z)) checkPosZ = true;
+          if(!checkPosZ) {game.getBlock(x,y,z+1).block.visible = false; game.getBlock(x,y,z+1).breakOverlay.visible = false; game.getBlock(x,y,z+1).occluded = this; game.scene.remove(game.getBlock(x,y,z+1).block); game.scene.remove(game.getBlock(x,y,z+1).breakOverlay);}
+        };
+      };
       /*
       var transform = new Ammo.btTransform();
       transform.setIdentity();
@@ -156,14 +238,19 @@ game.block = class {
       body.setActivationState(4);
       body.setCollisionFlags(2);
       game.physics.physicsWorld.addRigidBody(body);
-      */ 
-      var body = new CANNON.Body({mass: 0});
-      body.position.set(x, y, z);
-      body.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
-      game.physics.world.add(body);
-      this.hitboxPhysics = body;
-      this.block.visible = true;
-      this.breakOverlay.visible = true;
+      */
+      if(!nophysics) {
+        var body = new CANNON.Body({mass: 0});
+        body.position.set(x, y, z);
+        body.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
+        game.physics.world.add(body);
+        this.hitboxPhysics = body;
+      };
+      this.block.visible = check;
+      if(check){
+        game.scene.add(this.block);
+        game.scene.add(this.breakOverlay);
+      };
       this.break = 0;
       if(game.loadedBlocks.indexOf(this.block) == -1) {
         game.loadedBlocks.push(this.block);
@@ -176,7 +263,11 @@ game.block = class {
           game.physics.world.remove(this.hitboxPhysics);
         };
       };
-      this.isLoaded = true;
+      if(!nophysics) {
+        this.isLoaded = true;
+      } else {
+        this.isLoaded = "semi";
+      };
     };
     this.unload = function () {
       if(game.loadedBlocks.indexOf(this.block) != -1) {
@@ -190,6 +281,8 @@ game.block = class {
       this.breakOverlay.visible = false;
       this.hitboxPhysics = undefined;
       this.isLoaded = false;
+      game.scene.remove(this.block);
+      game.scene.remove(this.breakOverlay);
     };
     if(!game.getChunk(x, y, z)){
       this.chunk = new game.chunk(Math.floor(x/8)*8,Math.floor(z/8)*8, nogeneratechunk);
@@ -210,7 +303,16 @@ game.block = class {
     this.onbreak = game.blockTypes[this.type][3];
     this.hardness = game.blockTypes[this.type][4];
     this.requiredItem = game.blockTypes[this.type][5];
+    this.noOcclude = game.blockTypes[this.type][7];
     this.delete = function (noaudio) {
+      //make all neighbors visible
+      var check = false;
+      if(game.getBlock(x-1,y,z)) if(game.blockTypes[game.getBlock(x-1,y,z).type] && game.blockTypes[game.getBlock(x-1,y,z).type][0]) {game.getBlock(x-1,y,z).block.visible = true; game.scene.add(game.getBlock(x-1,y,z).block); game.scene.add(game.getBlock(x-1,y,z).breakOverlay); game.getBlock(x-1,y,z).occluded = false;}
+      if(game.getBlock(x+1,y,z)) if(game.blockTypes[game.getBlock(x+1,y,z).type] && game.blockTypes[game.getBlock(x+1,y,z).type][0]) {game.getBlock(x+1,y,z).block.visible = true; game.scene.add(game.getBlock(x+1,y,z).block); game.scene.add(game.getBlock(x+1,y,z).breakOverlay); game.getBlock(x+1,y,z).occluded = false;}
+      if(game.getBlock(x,y-1,z)) if(game.blockTypes[game.getBlock(x,y-1,z).type] && game.blockTypes[game.getBlock(x,y-1,z).type][0]) {game.getBlock(x,y-1,z).block.visible = true; game.scene.add(game.getBlock(x,y-1,z).block); game.scene.add(game.getBlock(x,y-1,z).breakOverlay); game.getBlock(x,y-1,z).occluded = false;}
+      if(game.getBlock(x,y+1,z)) if(game.blockTypes[game.getBlock(x,y+1,z).type] && game.blockTypes[game.getBlock(x,y+1,z).type][0]) {game.getBlock(x,y+1,z).block.visible = true; game.scene.add(game.getBlock(x,y+1,z).block); game.scene.add(game.getBlock(x,y+1,z).breakOverlay); game.getBlock(x,y+1,z).occluded = false;}
+      if(game.getBlock(x,y,z-1)) if(game.blockTypes[game.getBlock(x,y,z-1).type] && game.blockTypes[game.getBlock(x,y,z-1).type][0]) {game.getBlock(x,y,z-1).block.visible = true; game.scene.add(game.getBlock(x,y,z-1).block); game.scene.add(game.getBlock(x,y,z-1).breakOverlay); game.getBlock(x,y,z-1).occluded = false;}
+      if(game.getBlock(x,y,z+1)) if(game.blockTypes[game.getBlock(x,y,z+1).type] && game.blockTypes[game.getBlock(x,y,z+1).type][0]) {game.getBlock(x,y,z+1).block.visible = true; game.scene.add(game.getBlock(x,y,z+1).block); game.scene.add(game.getBlock(x,y,z+1).breakOverlay); game.getBlock(x,y,z+1).occluded = false;}
       if(game.loadedBlocks.indexOf(this.block) != -1) {
         game.loadedBlocks.splice(game.loadedBlocks.indexOf(this.block), 1);
       };
@@ -311,12 +413,21 @@ game.chunk = class {
     this.x = x;
     this.z = z;
     this.isLoaded = false;
-    this.load = function () {
-      if(this.isLoaded) return;
+    this.load = function (nophysics) {
+      if(nophysics) {
+        if(this.isLoaded == "semi") return
+      };
+      if(!nophysics) {
+        if(this.isLoaded == true) return
+      };
       this.blocks.forEach(function (block){
-        block.load();
+        block.load(nophysics);
       });
-      this.isLoaded = true;
+      if(!nophysics) {
+        this.isLoaded = true;
+      } else {
+        this.isLoaded = "semi";
+      };
     };
     this.unload = function () {
       if(!this.isLoaded) return;
@@ -352,6 +463,7 @@ game.blockmouseup = function (event) {
    if(game.lastBlockSelected) {
      game.lastBlockSelected.breakOverlay.material = game.materials["textures/break0.png"];
      game.lastBlockSelected.break = 0;
+     game.lastBlockSelected.breakOverlay.visible = false;
   };
   game.player.entityData.handActionCooldown = false;
 };

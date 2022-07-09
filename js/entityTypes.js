@@ -280,8 +280,6 @@ game.entityTypes = {
     new game.inventory(this, 18);
     this.entityData.handActionCooldown = false;
     this.entityData.attackCooldown = false;
-    if(!game.player) game.player = this;
-    if(game.getEntitiesByName("player").length > 1) this.delete();
     var this_ = this;
     var sin = 0;
     var walk = game.UI.sound("walk");
@@ -298,6 +296,11 @@ game.entityTypes = {
     this_.entityData.jumpHeight = this_.jumpHeight;
     this_.entityData.jumpLavaHeight = 0.75;
     this_.entityData.lastAttacker = {name: "void"};
+    //check
+    if(!game.player || game.player[0]) game.player = this;
+    if(game.player != this) {
+      this.delete(); return;
+    };
     //mouse and key events
     game.renderer.domElement.addEventListener("mousedown", function (event){
       if(this_.health == 0 || this_[0] == "deleted" || game.controls.PointerLock.isLocked == false){
@@ -527,7 +530,7 @@ game.entityTypes = {
         var closestEntity = undefined;
         var closestDistance = Infinity;
         for(var i = 0; i < game.entities.length; i++){
-          if(game.entities[i].type != "item" || game.entities[i].name != this_.name || game.entities[i] == this_){
+          if(game.entities[i].type != "item" || game.entities[i].name != this_.name || game.entities[i] == this_ || game.entities[i].entityData.itemAmount + this_.entityData.itemAmount > game.itemTypes[game.entities[i].name][8]){
             continue;
           };
           if(closestDistance > game.entities[i].hitboxCombat.position.distanceTo(this_.hitboxCombat.position)){

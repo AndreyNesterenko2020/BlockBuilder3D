@@ -324,7 +324,7 @@ game.entityPhysics = function(){
           continue;
         };
         game.entities[i].chunk = game.getChunk(game.entities[i].getPosition().position[0], game.entities[i].getPosition().position[1], game.entities[i].getPosition().position[2]);
-        if(game.entities[i].chunk && game.entities[i].chunk.isLoaded){
+        if(game.entities[i].chunk && game.entities[i].chunk.isLoaded == true){
           game.entities[i].object.visible = true;
         } else {
           game.entities[i].object.visible = false;
@@ -383,7 +383,7 @@ game.entityPhysics = function(){
         if(game.entities[i].chunk.isLoaded) {
           game.entities[i].ontick();
         };
-        if (motion && game.entities[i].physicsEnabled && game.entities[i].chunk && game.entities[i].chunk.isLoaded) {
+        if (motion && game.entities[i].physicsEnabled && game.entities[i].chunk && game.entities[i].chunk.isLoaded == true) {
             game.physics.tmpTrans = "";
             objThree.position.set(game.entities[i].readOnlyPosition[0], game.entities[i].readOnlyPosition[1], game.entities[i].readOnlyPosition[2]);
             game.entities[i].hitboxCombat.position.set(game.entities[i].hitboxPhysics.position.x, game.entities[i].hitboxPhysics.position.y, game.entities[i].hitboxPhysics.position.z);

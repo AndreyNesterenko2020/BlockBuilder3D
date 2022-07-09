@@ -77,6 +77,8 @@ game.item = class {
     if(!noCreateEvent) {
       this.oncreate();
     };
+    //check
+    if(!Object.values(inventory.slots).includes(this)) this.drop(true);
   };
 };
 game.inventory = class {

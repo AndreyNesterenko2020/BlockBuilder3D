@@ -242,10 +242,12 @@ game.generation.generate = function (x, z) {
     game.generation.oreDistribution("fat", 1, 8, x, z, -3, 99);
     game.generation.oreDistribution("iron_ore", 3, 8, x, z, -3, 90);
     game.generation.oreDistribution("diamond_ore", 3, 8, x, z, -3, 95);
+    game.generation.oreDistribution("rose", 1, 8, x, z, 1, 95);
   };
   if(game.generation.mode == 1){
     game.generation.layer("world_barrier", 1, size, x, z, -1, "fat", 99);
     game.generation.layer("plant", 1, size, x, z, 0, undefined, Infinity);
+    game.generation.oreDistribution("rose", 1, 8, x, z, 1, 95);
   };
   var cowChance = Math.round(Math.random()*100);
   var pigChance = Math.round(Math.random()*100);

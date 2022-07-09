@@ -70,7 +70,7 @@
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.4.2",
+                version: "1.4.3",
                 materials: {},
                 blocks: {},
                 blockObjects: {},
@@ -177,45 +177,84 @@
                           game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z+8].unload();
                         } catch (e){};
                       } else {
-                        try {
-                          game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z].unload();
-                        } catch (e){};
-                        try {
-                          game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z].unload();
-                        } catch (e){};
-                        try {
-                          game.chunkGrid[game.player.chunk.x][game.player.chunk.z-8].unload();
-                        } catch (e){};
-                        try {
-                          game.chunkGrid[game.player.chunk.x][game.player.chunk.z+8].unload();
-                        } catch (e){};
-                        //preview along x axis
-                        for(var x0 = game.player.chunk.x; x0 < game.player.chunk.x+8; x0++){
-                          for(var y0 = -8; y0 < 8; y0++){
-                            if(game.getBlock(x0, y0, game.player.chunk.z-1)) game.getBlock(x0, y0, game.player.chunk.z-1).load();
+                        if(game.renderMode == 1) {
+                          try {
+                            game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x][game.player.chunk.z-8].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x][game.player.chunk.z+8].unload();
+                          } catch (e){};
+                          //preview along x axis
+                          for(var x0 = game.player.chunk.x; x0 < game.player.chunk.x+8; x0++){
+                            for(var y0 = -8; y0 < 8; y0++){
+                              if(game.getBlock(x0, y0, game.player.chunk.z-1)) game.getBlock(x0, y0, game.player.chunk.z-1).load();
+                            };
                           };
-                        };
-                        for(var x0 = game.player.chunk.x; x0 < game.player.chunk.x+8; x0++){
-                          for(var y0 = -8; y0 < 8; y0++){
-                            if(game.getBlock(x0, y0, game.player.chunk.z+8)) game.getBlock(x0, y0, game.player.chunk.z+8).load();
+                          for(var x0 = game.player.chunk.x; x0 < game.player.chunk.x+8; x0++){
+                            for(var y0 = -8; y0 < 8; y0++){
+                              if(game.getBlock(x0, y0, game.player.chunk.z+8)) game.getBlock(x0, y0, game.player.chunk.z+8).load();
+                            };
                           };
-                        };
-                        //preview along z axis
-                        for(var z0 = game.player.chunk.z; z0 < game.player.chunk.z+8; z0++){
-                          for(var y0 = -8; y0 < 8; y0++){
-                            if(game.getBlock(game.player.chunk.x-1, y0, z0)) game.getBlock(game.player.chunk.x-1, y0, z0).load();
+                          //preview along z axis
+                          for(var z0 = game.player.chunk.z; z0 < game.player.chunk.z+8; z0++){
+                            for(var y0 = -8; y0 < 8; y0++){
+                              if(game.getBlock(game.player.chunk.x-1, y0, z0)) game.getBlock(game.player.chunk.x-1, y0, z0).load();
+                            };
                           };
-                        };
-                        for(var z0 = game.player.chunk.z; z0 < game.player.chunk.z+8; z0++){
-                          for(var y0 = -8; y0 < 8; y0++){
-                            if(game.getBlock(game.player.chunk.x+8, y0, z0)) game.getBlock(game.player.chunk.x+8, y0, z0).load();
+                          for(var z0 = game.player.chunk.z; z0 < game.player.chunk.z+8; z0++){
+                            for(var y0 = -8; y0 < 8; y0++){
+                              if(game.getBlock(game.player.chunk.x+8, y0, z0)) game.getBlock(game.player.chunk.x+8, y0, z0).load();
+                            };
                           };
+                        } else {
+                          try {
+                            game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z].load(true);
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z].load(true);
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x][game.player.chunk.z-8].load(true);
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x][game.player.chunk.z+8].load(true);
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x-16][game.player.chunk.z].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x+16][game.player.chunk.z].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x][game.player.chunk.z-16].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x][game.player.chunk.z+16].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z+8].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z-8].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x+8][game.player.chunk.z-8].unload();
+                          } catch (e){};
+                          try {
+                            game.chunkGrid[game.player.chunk.x-8][game.player.chunk.z+8].unload();
+                          } catch (e){};
                         };
                       };
                     };
                     //will return empty object if chunk exists
                     new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8);
-                    if(game.renderMode == 2){
+                    if(game.renderMode == 2 || game.renderMode == 3){
                       new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8+8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8);
                       new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8-8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8);
                       new game.chunk(Math.floor(Math.round(game.player.getPosition().position[0])/8)*8, Math.floor(Math.round(game.player.getPosition().position[2])/8)*8+8);
@@ -340,7 +379,7 @@
                 //world version check
                 try {
                   if(world.split("\n")[0].split("_")[1]){
-                    var prompt_ = confirm("Loading worlds with a version before 1.4.0 will cause corruption. Are you sure you want to load this world? World version: "+world.split("\n")[0].split("VERSION: ")[1]);
+                    var prompt_ = confirm("Loading worlds with a version prior to 1.4.0 will cause corruption. Are you sure you want to load this world? World version: "+world.split("\n")[0].split("VERSION: ")[1]);
                     if(prompt_ != true) return location.reload();
                   };
                 } catch (error) {
