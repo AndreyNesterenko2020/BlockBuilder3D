@@ -117,12 +117,12 @@ game.block = class {
       };
       test.onload = function () {
         var materials = [
-          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_x.png")}),
-          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_x.png")}),
-          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_y.png")}),
-          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_y.png")}),
-          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_z.png")}),
-          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_z.png")}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_x.png"), transparent: true}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_x.png"), transparent: true}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_y.png"), transparent: true}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_y.png"), transparent: true}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_positive_z.png"), transparent: true}),
+          new THREE.MeshLambertMaterial({map: game.textureLoader.load("textures/"+type.toLowerCase()+"_negative_z.png"), transparent: true}),
         ];
         this_.block.material = materials;
       };
@@ -163,7 +163,7 @@ game.block = class {
           if(!game.getBlock(x,y,z) || (game.getBlock(x,y,z) && game.getBlock(x,y,z).noOcclude)) checkNegX = true;
           if(!game.getBlock(x-1,y-1,z) || (game.getBlock(x-1,y-1,z) && game.getBlock(x-1,y-1,z).noOcclude)) checkNegX = true;
           if(!game.getBlock(x-1,y+1,z) || (game.getBlock(x-1,y+1,z) && game.getBlock(x-1,y+1,z).noOcclude)) checkNegX = true;
-          if(!game.getBlock(x-1,y,z-1) || (game.getBlock(x-1,y,z) && game.getBlock(x-1,y,z).noOcclude)) checkNegX = true;
+          if(!game.getBlock(x-1,y,z-1) || (game.getBlock(x-1,y,z-1) && game.getBlock(x-1,y,z-1).noOcclude)) checkNegX = true;
           if(!game.getBlock(x-1,y,z+1) || (game.getBlock(x-1,y,z+1) && game.getBlock(x-1,y,z+1).noOcclude)) checkNegX = true;
           if(!checkNegX) {game.getBlock(x-1,y,z).block.visible = false; game.getBlock(x-1,y,z).breakOverlay.visible = false; game.getBlock(x-1,y,z).occluded = this; game.scene.remove(game.getBlock(x-1,y,z).block); game.scene.remove(game.getBlock(x-1,y,z).breakOverlay);}
         };
@@ -299,20 +299,22 @@ game.block = class {
       game.blockGrid[x][y] = {};
     };
     game.blockGrid[x][y][z] = this;
-    this.oncreate = game.blockTypes[this.type][2];
-    this.onbreak = game.blockTypes[this.type][3];
-    this.hardness = game.blockTypes[this.type][4];
-    this.requiredItem = game.blockTypes[this.type][5];
-    this.noOcclude = game.blockTypes[this.type][7];
+    if(game.blockTypes[this.type]) {
+      this.oncreate = game.blockTypes[this.type][2];
+      this.onbreak = game.blockTypes[this.type][3];
+      this.hardness = game.blockTypes[this.type][4];
+      this.requiredItem = game.blockTypes[this.type][5];
+      this.noOcclude = game.blockTypes[this.type][7];
+    };
     this.delete = function (noaudio) {
       //make all neighbors visible
       var check = false;
-      if(game.getBlock(x-1,y,z)) if(game.blockTypes[game.getBlock(x-1,y,z).type] && game.blockTypes[game.getBlock(x-1,y,z).type][0]) {game.getBlock(x-1,y,z).block.visible = true; game.scene.add(game.getBlock(x-1,y,z).block); game.scene.add(game.getBlock(x-1,y,z).breakOverlay); game.getBlock(x-1,y,z).occluded = false;}
-      if(game.getBlock(x+1,y,z)) if(game.blockTypes[game.getBlock(x+1,y,z).type] && game.blockTypes[game.getBlock(x+1,y,z).type][0]) {game.getBlock(x+1,y,z).block.visible = true; game.scene.add(game.getBlock(x+1,y,z).block); game.scene.add(game.getBlock(x+1,y,z).breakOverlay); game.getBlock(x+1,y,z).occluded = false;}
-      if(game.getBlock(x,y-1,z)) if(game.blockTypes[game.getBlock(x,y-1,z).type] && game.blockTypes[game.getBlock(x,y-1,z).type][0]) {game.getBlock(x,y-1,z).block.visible = true; game.scene.add(game.getBlock(x,y-1,z).block); game.scene.add(game.getBlock(x,y-1,z).breakOverlay); game.getBlock(x,y-1,z).occluded = false;}
-      if(game.getBlock(x,y+1,z)) if(game.blockTypes[game.getBlock(x,y+1,z).type] && game.blockTypes[game.getBlock(x,y+1,z).type][0]) {game.getBlock(x,y+1,z).block.visible = true; game.scene.add(game.getBlock(x,y+1,z).block); game.scene.add(game.getBlock(x,y+1,z).breakOverlay); game.getBlock(x,y+1,z).occluded = false;}
-      if(game.getBlock(x,y,z-1)) if(game.blockTypes[game.getBlock(x,y,z-1).type] && game.blockTypes[game.getBlock(x,y,z-1).type][0]) {game.getBlock(x,y,z-1).block.visible = true; game.scene.add(game.getBlock(x,y,z-1).block); game.scene.add(game.getBlock(x,y,z-1).breakOverlay); game.getBlock(x,y,z-1).occluded = false;}
-      if(game.getBlock(x,y,z+1)) if(game.blockTypes[game.getBlock(x,y,z+1).type] && game.blockTypes[game.getBlock(x,y,z+1).type][0]) {game.getBlock(x,y,z+1).block.visible = true; game.scene.add(game.getBlock(x,y,z+1).block); game.scene.add(game.getBlock(x,y,z+1).breakOverlay); game.getBlock(x,y,z+1).occluded = false;}
+      if(game.getBlock(x-1,y,z)){ if((game.blockTypes[game.getBlock(x-1,y,z).type] && game.blockTypes[game.getBlock(x-1,y,z).type][0]) || !game.blockTypes[game.getBlock(x-1,y,z).type]) {game.getBlock(x-1,y,z).block.visible = true}; game.scene.add(game.getBlock(x-1,y,z).block); game.scene.add(game.getBlock(x-1,y,z).breakOverlay); game.getBlock(x-1,y,z).occluded = false;}
+      if(game.getBlock(x+1,y,z)){ if((game.blockTypes[game.getBlock(x+1,y,z).type] && game.blockTypes[game.getBlock(x+1,y,z).type][0]) || !game.blockTypes[game.getBlock(x+1,y,z).type]) {game.getBlock(x+1,y,z).block.visible = true}; game.scene.add(game.getBlock(x+1,y,z).block); game.scene.add(game.getBlock(x+1,y,z).breakOverlay); game.getBlock(x+1,y,z).occluded = false;}
+      if(game.getBlock(x,y-1,z)){ if((game.blockTypes[game.getBlock(x,y-1,z).type] && game.blockTypes[game.getBlock(x,y-1,z).type][0]) || !game.blockTypes[game.getBlock(x,y-1,z).type]) {game.getBlock(x,y-1,z).block.visible = true}; game.scene.add(game.getBlock(x,y-1,z).block); game.scene.add(game.getBlock(x,y-1,z).breakOverlay); game.getBlock(x,y-1,z).occluded = false;}
+      if(game.getBlock(x,y+1,z)){ if((game.blockTypes[game.getBlock(x,y+1,z).type] && game.blockTypes[game.getBlock(x,y+1,z).type][0]) || !game.blockTypes[game.getBlock(x,y+1,z).type]) {game.getBlock(x,y+1,z).block.visible = true}; game.scene.add(game.getBlock(x,y+1,z).block); game.scene.add(game.getBlock(x,y+1,z).breakOverlay); game.getBlock(x,y+1,z).occluded = false;}
+      if(game.getBlock(x,y,z-1)){ if((game.blockTypes[game.getBlock(x,y,z-1).type] && game.blockTypes[game.getBlock(x,y,z-1).type][0]) || !game.blockTypes[game.getBlock(x,y,z-1).type]) {game.getBlock(x,y,z-1).block.visible = true}; game.scene.add(game.getBlock(x,y,z-1).block); game.scene.add(game.getBlock(x,y,z-1).breakOverlay); game.getBlock(x,y,z-1).occluded = false;}
+      if(game.getBlock(x,y,z+1)){ if((game.blockTypes[game.getBlock(x,y,z+1).type] && game.blockTypes[game.getBlock(x,y,z+1).type][0]) || !game.blockTypes[game.getBlock(x,y,z+1).type]) {game.getBlock(x,y,z+1).block.visible = true}; game.scene.add(game.getBlock(x,y,z+1).block); game.scene.add(game.getBlock(x,y,z+1).breakOverlay); game.getBlock(x,y,z+1).occluded = false;}
       if(game.loadedBlocks.indexOf(this.block) != -1) {
         game.loadedBlocks.splice(game.loadedBlocks.indexOf(this.block), 1);
       };

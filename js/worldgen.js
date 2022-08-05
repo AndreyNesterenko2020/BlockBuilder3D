@@ -10,12 +10,12 @@ game.generation.layer = function (type, thickness, width, x, z, top) {
   };
   game.generation.top += thickness;
 };
-game.generation.oreDistribution = function (type, thickness, width, x, z, top, chance) {
+game.generation.oreDistribution = function (type, thickness, width, x, z, top, chance, noOverride) {
   for(y = top; y <= top+thickness-1; y++){
     for(x0 = x; x0 <= x+width-1; x0++){
       for(z0 = z; z0 <= z+width-1; z0++){
         if(Math.random()*100 > chance) {
-          if(game.getBlock(x0, y, z0)) game.getBlock(x0, y, z0).delete(true);
+          if(game.getBlock(x0, y, z0) && !noOverride) game.getBlock(x0, y, z0).delete(true);
           new game.block(x0, y, z0, type);
         };
       };
@@ -198,12 +198,24 @@ game.generation.house = function(x, z) {
     new game.item("diamond", chest.inventory, Math.round(Math.random()*5)+1);
   };
   var appleChance = Math.random()*100;
-  if(diamondChance >= 10) {
+  if(appleChance >= 10) {
     new game.item("apple", chest.inventory, Math.round(Math.random()*5)+1);
   };
   var diamondappleChance = Math.random()*100;
   if(diamondappleChance >= 10) {
     new game.item("diamond_apple", chest.inventory, Math.round(Math.random()*5)+1);
+  };
+};
+game.generation.chest = function (x, z) {
+  //starter chest
+  var chest = new game.block(x+4, 1, z+4, "chest", false, false, true);
+  new game.item("diamond", chest.inventory, Math.round(Math.random()*4)+1);
+  new game.item("iron", chest.inventory, Math.round(Math.random()*10)+1);
+  new game.item("apple", chest.inventory, Math.round(Math.random()*3)+1);
+  new game.item("tree", chest.inventory, Math.round(Math.random()*7)+1);
+  var fatChance = Math.random()*100;
+  if(fatChance >= 99) {
+    new game.item("fat", chest.inventory, 1);
   };
 };
 game.generation.tree = function(x, y, z) {
@@ -232,23 +244,6 @@ game.generation.tree = function(x, y, z) {
 };
 game.generation.generate = function (x, z) {
   var size = game.generation.size;
-  if(game.generation.mode == 2){
-    game.generation.layer("world_barrier", 1, size, x, z, -5);
-    game.generation.layer("lava", 1, size, x, z, -4);
-    game.generation.layer("stone", 1, size, x, z, -3);
-    game.generation.layer("stone", 2, size, x, z, -2);
-    game.generation.layer("plant", 1, size, x, z, 0);
-    //type, thickness, width, x, z, top, chance
-    game.generation.oreDistribution("fat", 1, 8, x, z, -3, 99);
-    game.generation.oreDistribution("iron_ore", 3, 8, x, z, -3, 90);
-    game.generation.oreDistribution("diamond_ore", 3, 8, x, z, -3, 95);
-    game.generation.oreDistribution("rose", 1, 8, x, z, 1, 95);
-  };
-  if(game.generation.mode == 1){
-    game.generation.layer("world_barrier", 1, size, x, z, -1, "fat", 99);
-    game.generation.layer("plant", 1, size, x, z, 0, undefined, Infinity);
-    game.generation.oreDistribution("rose", 1, 8, x, z, 1, 95);
-  };
   var cowChance = Math.round(Math.random()*100);
   var pigChance = Math.round(Math.random()*100);
   var tonyChance = Math.round(Math.random()*1000);
@@ -393,4 +388,26 @@ game.generation.generate = function (x, z) {
       game.generation.tree(x+Math.round(Math.random()*(size-3))+1, 1, z+Math.round(Math.random()*(size-3))+1);
     };
   };
+  if(game.generation.mode == 2){
+    game.generation.layer("world_barrier", 1, size, x, z, -5);
+    game.generation.layer("lava", 1, size, x, z, -4);
+    game.generation.layer("stone", 1, size, x, z, -3);
+    game.generation.layer("stone", 2, size, x, z, -2);
+    game.generation.layer("plant", 1, size, x, z, 0);
+    //type, thickness, width, x, z, top, chance
+    game.generation.oreDistribution("fat", 1, 8, x, z, -3, 99);
+    game.generation.oreDistribution("iron_ore", 3, 8, x, z, -3, 90);
+    game.generation.oreDistribution("diamond_ore", 3, 8, x, z, -3, 95);
+    game.generation.oreDistribution("rose", 1, 8, x, z, 1, 95, true);
+  };
+  if(game.generation.mode == 1){
+    game.generation.layer("world_barrier", 1, size, x, z, -2);
+    game.generation.layer("stone", 1, size, x, z, -1);
+    game.generation.layer("plant", 1, size, x, z, 0);
+    game.generation.oreDistribution("fat", 1, 8, x, z, -2, 99);
+    game.generation.oreDistribution("iron_ore", 1, 8, x, z, -1, 90);
+    game.generation.oreDistribution("diamond_ore", 1, 8, x, z, -1, 95);
+    game.generation.oreDistribution("rose", 1, 8, x, z, 1, 95, true);
+  };
+  if(x == 64 && z == 48) game.generation.chest(64, 48);
 };

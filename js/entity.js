@@ -315,6 +315,7 @@ game.entity = class {
 //entity tick (update stuff)
 game.entityPhysics = function(){
     setTimeout(game.entityPhysics, 1);
+    if(game.paused) return;
     game.physics.world.step(1/120);
     for (let i = 0; i < game.entities.length; i++) {
         if(game.entities[i][0] == "deleted"){

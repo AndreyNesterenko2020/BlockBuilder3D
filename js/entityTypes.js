@@ -672,7 +672,7 @@ game.entityTypes = {
     this.ontick = function (){
       if(this_.health <= 0) return;
       sin += this_.movementSpeed/100;
-      this_.animations[2] = Math.abs(Math.sin(sin));
+      this_.animations[1] = Math.abs(Math.sin(sin));
       //check if 2 seconds passed for jump
       if(Date.now() - lastJumpUpdate >= 2000) {
         var objects = Object.values(game.loadedBlocks);

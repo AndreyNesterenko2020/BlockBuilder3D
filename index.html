@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 
 <script>
+  //DEVS: CHANGE THE FOLLOWIMG TO TRUE IF THIS IS A TEST BUILD
+  testBuild = true
+</script>
+
+<script>
     ///////////////////////////////////
     //                               //
     //   Made by Andrey Nesterenko   //
@@ -59,18 +64,18 @@
         </style>
     </head>
     <body onbeforeunload="if(!game.paused){return game.save(1)}">
-    <h1 id="menu" style="height: 100%; width: 100%; position: fixed; top: 0; margin-left: 0px; margin-top: 0px; text-align: center; background-image: url('textures/dirt.png');">
+    <h1 id="menu" style="height: 100%; width: 100%; position: fixed; top: 0; margin-left: 0px; margin-top: 0px; text-align: center; background-image: url('textures/dirt.png'); z-index: 1;">
       <br>BLOCK BUILDER 3D
-      <button style="top: 40%; left: 33.3%; width: 33.3%" onclick="worldSelect = 'worldSelect'; u = 'upload'; menu = 'menu'; none = 'none'; n = 'new world-'+Math.floor(Math.random()*1000); worldtype = 'worldtype'; worldname = 'worldname'; thin = 'thin'; thick = 'thick'; worldprompt = `<br>BLOCK BUILDER 3D<br><br><br><br>Create World<br><br>Name: <input autocomplete=off id=worldname ></input><br><br><br>World Type: <select id=worldtype><option>thin</option><option>thick</option></select><br><br>Start with items: <input onclick=game.generation.items=!game.generation.items type=checkbox value=false><br><br>Allow cheats: <input onclick=game.generation.cheats=!game.generation.cheats type=checkbox value=false><br><br>Allow respawn: <input onclick=game.generation.respawn=!game.generation.respawn type=checkbox checked=true><br><br><button style='left:47%' onclick='game.world = document.getElementById(worldname).value; if(document.getElementById(worldtype).value == thin) {game.generation.mode = 1;} else if (document.getElementById(worldtype).value == thick){game.generation.mode = 2;}; game.init();'><h1>Create World</h1></button>`; document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<p style='margin-top: 5%'>World Select</p><br><button style='top: 70%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(menu).innerHTML = worldprompt; document.getElementById(worldname).value = n; document.getElementsByClassName(worldSelect)[0].style.display = none;'>create new world</button><button type='file' style='top: 80%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(u).click()'>Upload World</button>`; document.getElementsByClassName('worldSelect')[0].style.display = 'block'; Object.keys(localStorage).forEach(function (world){try{var world0 = document.createElement('button'); world0.style='width: 95%; text-align: center; border: solid black 4px; position: relative'; world0.innerHTML = '<h1>'+world+'<\h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world0); world0.onclick=function(){game.init(localStorage[world]);}; var world1 = document.createElement('button'); world1.style='width: 5%; text-align: center; border: solid black 4px; position: relative'; world1.innerHTML = '<h1><img src=textures/trash.png></img></h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world1); world1.onclick=function(){localStorage.removeItem(world); location.reload();}}catch(e){console.log(e)}})"><h1>Play</h1></button>
+      <button style="top: 40%; left: 33.3%; width: 33.3%" onclick="worldSelect = 'worldSelect'; u = 'upload'; menu = 'menu'; none = 'none'; n = 'new world-'+Math.floor(Math.random()*1000); worldtype = 'worldtype'; worldname = 'worldname'; thin = 'thin'; thick = 'thick'; worldprompt = `<br>BLOCK BUILDER 3D<br><br><br><br>Create World<br><br>Name: <input autocomplete=off id=worldname ></input><br><br><br>World Type: <select id=worldtype><option>thin</option><option>thick</option></select><br><br>Starter chest: <input onclick=game.generation.items=!game.generation.items type=checkbox value=false><br><br>Allow cheats: <input onclick=game.generation.cheats=!game.generation.cheats type=checkbox value=false><br><br>Allow respawn: <input onclick=game.generation.respawn=!game.generation.respawn type=checkbox checked=true><br><br><button style='left:47%' onclick='game.world = document.getElementById(worldname).value; if(document.getElementById(worldtype).value == thin) {game.generation.mode = 1;} else if (document.getElementById(worldtype).value == thick){game.generation.mode = 2;}; game.init();'><h1>Create World</h1></button>`; document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<p style='margin-top: 5%'>World Select</p><br><button style='top: 70%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(menu).innerHTML = worldprompt; document.getElementById(worldname).value = n; document.getElementsByClassName(worldSelect)[0].style.display = none;'>create new world</button><button type='file' style='top: 80%; left: 35%; width: 30%; height: 10%; font-size: 100%' onclick='document.getElementById(u).click()'>Upload World</button>`; document.getElementsByClassName('worldSelect')[0].style.display = 'block'; Object.keys(localStorage).forEach(function (world){try{var world0 = document.createElement('button'); world0.style='width: 95%; text-align: center; border: solid black 4px; position: relative'; world0.innerHTML = '<h1>'+world+'<\h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world0); world0.onclick=function(){game.init(localStorage[world]);}; var world1 = document.createElement('button'); world1.style='width: 5%; text-align: center; border: solid black 4px; position: relative'; world1.innerHTML = '<h1><img src=textures/trash.png></img></h1>'; document.getElementsByClassName('worldSelect')[0].appendChild(world1); world1.onclick=function(){localStorage.removeItem(world); location.reload();}}catch(e){console.log(e)}})"><h1>Play</h1></button>
       <button style="top: 50%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>How to play:<br><br>WASD - Move<br>Left Mouse Button - attack/break<br>Right Mouse Button - build<br>E - open inventory<br>T - throw item<br>Scroll/Number Keys - select item from toolbar<br>Space - jump<br>\\ - Toggle debug mode<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>How to play</h1></button>
       <button style="top: 60%; left: 33.3%; width: 33.3%" onclick="document.getElementById('menu').innerHTML = `<br>BLOCK BUILDER 3D<br><br><br><br>Credits:<br><br>ExplodIng_Andrey - creator, modeler, and programmer<br>Asztro - Helping artist<br>SyrupHunter270 - Sound effects<br>Tonytheboi - Tester and Sound effects<br>All our friends - supporting us<br><br><br><br><button style=left:48% onclick=location.reload()><h1>Back</h1></button>`"><h1>Credits</h1></button>
     </h1>
-    <div class="worldSelect" style=display:none><h2 style="position: fixed">Looks like there are no worlds here... go ahead, make one right now!</h2></div>
+    <div class="worldSelect" style="display:none; z-index: 2;"><h2 style="position: fixed">Looks like there are no worlds here... go ahead, make one right now!</h2></div>
     <input id="upload" type="file" accept=".world" style="display: none;" onclick="this.addEventListener('change', function (event){var reader = new FileReader(); reader.readAsText(event.target.files[0]); reader.onload=function(event){game.init(event.target.result);}})">
 	<img style="pointer-events: none; position: absolute; left: 50%; top: 50%" id="crosshair" src="textures/crosshair.png"></img>
         <script>
             var game = {
-                version: "1.4.3",
+                version: "dev",
                 materials: {},
                 blocks: {},
                 blockObjects: {},
@@ -87,6 +92,7 @@
                 world: null,
                 paused: false,
                 achievements: [],
+                canPause: false,
             };
             game.scene = new THREE.Scene();
             game.textureLoader = new THREE.TextureLoader();
@@ -279,6 +285,22 @@
                   } else {
                     game.UI.lock.style.opacity = 1;
                   };
+                  if(game.controls.PointerLock.isLocked){
+                    game.UI.settings.style.display = "none";
+                    game.paused=false;
+                    window.alreadySaved = false;
+                    game.UI.toolbar.style.display = "block";
+                    game.UI.Health.style.display = "none";
+                  } else if(game.canPause) {
+                    game.UI.settings.style.display = "block";
+                    if(game.canPause) game.paused = true;
+                    if(!window.alreadySaved) {
+                      game.save(1);
+                      window.alreadySaved = true;
+                    };
+                    game.UI.toolbar.style.display = "none";
+                    game.UI.Health.style.display = "none";
+                  };
                   game.controls.FirstPerson.enabled = true;
                   game.controls.PointerLock.enabled = true;
                   document.getElementById("crosshair").style.display = "block";
@@ -301,9 +323,9 @@
                     window.alreadySaved = false;
                     game.UI.toolbar.style.display = "block";
                     game.UI.Health.style.display = "block";
-                  } else {
+                  } else if(game.canPause) {
                     game.UI.settings.style.display = "block";
-                    game.paused=true;
+                    if(game.canPause) game.paused = true;
                     if(!window.alreadySaved) {
                       game.save(1);
                       window.alreadySaved = true;
@@ -388,6 +410,7 @@
                 document.title = document.title + " " + game.version;
                 game.render();
                 game.UI.init();
+                document.getElementById("menu").innerHTML = "<br>BLOCK BUILDER 3D<br><br><br><br><br><br>Loading world..."
                 //game.block(0,0,0, "stone");
                 /*
                 game.physics.collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
@@ -411,26 +434,19 @@
                     game.UI.consoleMessage("Welcome back, Player!");
                   }, 1000);
                 } else {
-                  game.player = new game.entity("player", [5,1.5,5]);
+                  game.player = new game.entity("player", [4,1.5,6]);
                   setTimeout(function (){
                     game.UI.consoleMessage("");
                     game.UI.consoleMessage("Hello there, Player!");
                     if(!game.generation.items){
-                      new game.item("wood_pickaxe", game.player.inventory, 1);
-                      new game.item("stone", game.player.inventory, 20);
-                      new game.item("planks", game.player.inventory, 20);
-                      new game.item("plant", game.player.inventory, 20);
-                      new game.item("wood", game.player.inventory, 20);
-                      new game.item("mud", game.player.inventory, 20);
-                      new game.item("bricks", game.player.inventory, 20);
-                      new game.item("stonebricks", game.player.inventory, 20);
-                      new game.item("dirt", game.player.inventory, 20);
+                      game.generation.chest(0, 0);
                     } else {
                       
                     };
+                    document.getElementById("menu").style.display = "none";
+                    game.canPause = true;
                   }, 1000);
                 };
-                document.getElementById("menu").style.display = "none";
                 document.getElementsByClassName('worldSelect')[0].style.display = "none";
                 setTimeout(game.saveLoop, 5000);
                 game.controls.PointerLock.lock();
@@ -475,6 +491,12 @@
               setTimeout(function(){
                 if(!game.player){
                   game.player = new game.entity("player", [5, 1.5, 5]);
+                };
+                document.getElementById("menu").style.display = "none";
+                game.canPause = true;
+                if(window.testBuild) {
+                  game.UI.testBuild.style.display = "block";
+                  game.UI.testBuild2.style.display = "block";
                 };
               }, 1000);
             };

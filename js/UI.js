@@ -224,14 +224,25 @@ game.UI.commands = {
   },
   xray: function (block) {
     game.UI.achievement("Secret", "Do something special", "unknown.png");
-    game.loadedBlocks.forEach(function (block_) {
-      if(block_.block.type == block) {
-        block_.visible = true;
-      } else {
-        block_.visible = false;
+    var stop = false;
+    document.addEventListener("keydown", function (event) {
+      if(event.key == "q") {
+        stop = true;
       };
     });
-    return "xraying for "+block+".";
+    function loop() {
+      if(stop) {game.UI.commands.refresh(); return};
+      game.loadedBlocks.forEach(function (block_) {
+        if(block_.block.type == block || block_.block.type == "lava") {
+          block_.visible = true;
+        } else {
+          block_.visible = false;
+        };
+      });
+      setTimeout(loop,100);
+    };
+    loop();
+    return "xraying for "+block+", press Q to cancel.";
   },
 };
 game.UI.nonCheats = ["xray", "refresh", "help"];
@@ -270,6 +281,9 @@ game.UI.respawn = function (){
       game.getEntitiesByName("rooster")[i].health = game.getEntitiesByName("rooster")[i].maxHealth;
     };
   };
+  setTimeout(function () {
+    game.canPause = true;
+  }, 1000);
 };
 game.UI.init = function (){
     game.UI.toolbar = document.createElement("div");
@@ -280,6 +294,7 @@ game.UI.init = function (){
     game.UI.toolbar.style.backgroundSize = "100% 100%";
     game.UI.toolbar.style.width = "60%";
     game.UI.toolbar.style.height = "17%";
+    game.UI.toolbar.style.zIndex = 0;
     document.body.appendChild(game.UI.toolbar);
     game.controls.selection = "FreeCam"
     game.UI.settings = document.createElement("div");
@@ -438,6 +453,14 @@ game.UI.init = function (){
     game.UI.achievements.style.display = "none";
     game.UI.achievements.innerHTML = "<h1 style='position: relative; margin-left: 35%'>Your achievements</h1><div id='achievementlist' style='overflow-y: scroll; height: 60%'></div><button style='position: relative; margin-left: 45%' onclick=game.UI.achievements.style.display=none><h1>Close</h1></button>";
     document.body.appendChild(game.UI.achievements);
+    game.UI.testBuild = document.createElement("h1");
+    game.UI.testBuild.style = "position: absolute; left: 0; top: 0; display: none;";
+    game.UI.testBuild.innerHTML = "TEST BUILD: version " + game.version;
+    document.body.appendChild(game.UI.testBuild);
+    game.UI.testBuild2 = document.createElement("h1");
+    game.UI.testBuild2.style = "position: absolute; right: 0; top: 0; display: none;";
+    game.UI.testBuild2.innerHTML = "TEST BUILD: version " + game.version;
+    document.body.appendChild(game.UI.testBuild2);
 };
 game.UI.consoleMessage = function (message){
   document.getElementById("console_output").innerHTML += "<br>"+message;
@@ -515,6 +538,7 @@ game.UI.die = function () {
   deathScreen.style.transition = "opacity 1s";
   document.body.appendChild(deathScreen);
   game.UI.consoleMessage(game.player.name+" was Killed by "+game.player.entityData.lastAttacker.name);
+  game.canPause = false;
   setTimeout(function (){
     deathScreen.style.opacity = 1;
     game.save(1);
@@ -705,13 +729,25 @@ game.UI.slot = function (id) {
       };
       if(!game.UI.chestSlots.includes(game.UI.first)) {
         game.player.inventory.slots[first] = second_item;
+        try {
+          second_item.inventory = game.player.inventory;
+        } catch (e) {};
       } else {
         game.UI.currentChest.inventory.slots[first] = second_item;
+        try {
+          second_item.inventory = game.UI.currentChest.inventory;
+        } catch (e) {};
       };
       if(!game.UI.chestSlots.includes(game.UI.second)) {
         game.player.inventory.slots[second] = first_item;
+        try {
+          first_item.inventory = game.player.inventory;
+        } catch (e) {};
       } else {
         game.UI.currentChest.inventory.slots[second] = first_item;
+        try {
+          first_item.inventory = game.UI.currentChest.inventory;
+        } catch (e) {};
       };
       game.UI.itemPickedUp(0, first_item.type);
       a = game.UI.first;
@@ -766,15 +802,26 @@ game.UI.chestSlot = function (id) {
       };
       if(!game.UI.chestSlots.includes(game.UI.first)) {
         game.player.inventory.slots[first] = second_item;
+        try {
+          second_item.inventory = game.player.inventory;
+        } catch (e) {};
       } else {
         game.UI.currentChest.inventory.slots[first] = second_item;
+        try {
+          second_item.inventory = game.UI.currentChest.inventory;
+        } catch (e) {};
       };
       if(!game.UI.chestSlots.includes(game.UI.second)) {
         game.player.inventory.slots[second] = first_item;
+        try {
+          first_item.inventory = game.player.inventory;
+        } catch (e) {};
       } else {
         game.UI.currentChest.inventory.slots[second] = first_item;
+        try {
+          first_item.inventory = game.UI.currentChest.inventory;
+        } catch (e) {};
       };
-      game.UI.itemPickedUp(0, first_item.type);
       a = game.UI.first;
       b = game.UI.second;
       game.UI.first = undefined;
@@ -887,6 +934,11 @@ game.UI.updateRecipes = function () {
 };
 document.body.style.fontFamily = "BlockBuilder3D";
 document.body.addEventListener("keydown", function(event) {
+    if(event.key == "Escape") {
+      setTimeout(function () {
+        game.controls.PointerLock.lock();
+      }, 100);
+    };
     if(event.keyCode == 13){
       game.UI.consoleMessage(document.getElementById("console_input").value);
       try{
@@ -998,8 +1050,10 @@ game.renderer.domElement.addEventListener("mousedown", () => {
   if(event.button == 2){
     if(intersects[0].object.block && intersects[0].object.block.type == "chest") {
       console.log("Opened chest");
-      game.UI.toggleInventory(intersects[0].object.block);
-      game.UI.sound("chest_open");
+      setTimeout(function (){
+        game.UI.toggleInventory(intersects[0].object.block);
+        game.UI.sound("chest_open");
+      }, 200);
       return;
     };
     game.player.inventory.slots[game.player.inventory.selection].rightuse(playerPos, raycastPos, intersects[0].object, game.player);
